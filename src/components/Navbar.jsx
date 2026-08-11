@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { User } from 'lucide-react';
 
 export default function Navbar() {
@@ -6,15 +7,15 @@ export default function Navbar() {
       <nav className="max-w-7xl mx-auto px-6 md:px-8 py-4 flex items-center justify-between">
         
         {/* Brand Logo */}
-        <a href="/" className="text-2xl font-black italic tracking-tighter text-black flex items-center">
+        <Link to="/" className="text-2xl font-black italic tracking-tighter text-black flex items-center">
           KayseTrans<span className="not-italic font-extrabold ml-1">Auto</span>
-        </a>
+        </Link>
 
         {/* Center Navigation Links */}
         <div className="hidden md:flex items-center space-x-8 text-sm font-bold text-black">
-          <a href="#inventory" className="hover:opacity-70 transition-opacity">
+          <Link to="/cars" className="hover:opacity-70 transition-opacity">
             Cars for Sale
-          </a>
+          </Link>
           <a href="#about" className="hover:opacity-70 transition-opacity">
             About Us
           </a>

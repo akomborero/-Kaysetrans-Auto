@@ -1,4 +1,4 @@
-import Navbar from '../Navbar';
+
 import HeroCard from '../HeroCard';
 
 import FindMatch from '../FindMatch';
@@ -10,7 +10,7 @@ import FAQSection from '../FAQSection';
 export default function Home() {
   return (
     <div className="min-h-screen bg-white font-sans text-black">
-      <Navbar />
+    
 
       {/* Hero Section */}
       <section className="relative min-h-[calc(100vh-73px)] bg-black overflow-hidden flex items-center">
