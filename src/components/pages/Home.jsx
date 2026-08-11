@@ -1,28 +1,41 @@
 import Navbar from '../Navbar';
 import HeroCard from '../HeroCard';
-import Showcase from '../Showcase';
 
+import FindMatch from '../FindMatch';
+import WhyChooseUs from '../WhyChooseUs';
+import FeaturedStock from '../FeaturedStock';
+import  NewsSection from '../NewsSection';
+import FAQSection from '../FAQSection';
+  
 export default function Home() {
   return (
-    <div className="relative min-h-screen bg-black overflow-hidden font-sans">
-      {/* Dark Sports Car Hero Background */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40 z-0 scale-105"
-        style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&q=80&w=2000')`
-        }}
-      >
-        <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-black/80" />
-      </div>
-
+    <div className="min-h-screen bg-white font-sans text-black">
       <Navbar />
 
-      <main className="relative z-10 max-w-7xl mx-auto px-8 pt-12 pb-24 flex items-center min-h-[calc(100vh-90px)]">
-        <HeroCard />
-      </main>
+      {/* Hero Section */}
+      <section className="relative min-h-[calc(100vh-73px)] bg-black overflow-hidden flex items-center">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40 z-0 scale-105"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&q=80&w=2000')`
+          }}
+        >
+          <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-black/80" />
+        </div>
 
-      {/* Showroom Showcase Section */}
-      <Showcase />
+        <main className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 py-12 w-full">
+          <HeroCard />
+        </main>
+      </section>
+
+      {/* 8-Vehicle Grid replacing the empty showroom */}
+    
+
+      <FindMatch />
+      <WhyChooseUs />
+        <FeaturedStock />
+        <NewsSection/>
+        <FAQSection/>
     </div>
   );
 }
