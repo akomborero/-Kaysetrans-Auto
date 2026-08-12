@@ -66,7 +66,7 @@ export default function HeroCard() {
     const activeCar = cars[currentIndex];
 
     return (
-      <div className="relative w-full h-screen bg-black text-white overflow-hidden">
+      <div className="relative w-full min-h-[85vh] bg-black text-white overflow-hidden flex flex-col justify-end">
         {/* Full Screen Background Slides */}
         {cars.map((car, idx) => {
           const imgUrl = getCarImage(car);
@@ -95,10 +95,10 @@ export default function HeroCard() {
         })}
 
         {/* Hero Overlay Content */}
-        <div className="relative z-10 h-full max-w-7xl mx-auto px-6 md:px-12 flex flex-col justify-between py-12 md:py-16">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 pt-16 pb-12 flex flex-col justify-between h-full flex-grow">
           
           {/* Top Badge */}
-          <div className="pt-8">
+          <div className="pt-4">
             <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-black uppercase tracking-widest backdrop-blur-md">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               JUST ARRIVED ({currentIndex + 1} / {cars.length})
@@ -106,7 +106,7 @@ export default function HeroCard() {
           </div>
 
           {/* Vehicle Title & Info */}
-          <div className="space-y-4 max-w-2xl">
+          <div className="space-y-4 max-w-2xl my-auto py-8">
             <h1 className="text-5xl md:text-8xl font-black uppercase tracking-tight italic leading-none drop-shadow-md">
               {activeCar.make}{' '}
               <span className="text-neutral-300 font-extrabold">{activeCar.model}</span>
@@ -143,7 +143,7 @@ export default function HeroCard() {
           </div>
 
           {/* Pagination Indicators & Controls */}
-          <div className="flex items-center justify-between w-full pt-6">
+          <div className="flex items-center justify-between w-full pt-4">
             <div className="flex items-center gap-2">
               {cars.map((_, idx) => (
                 <button
@@ -181,8 +181,12 @@ export default function HeroCard() {
 
   // FALLBACK VIEW: Display standard Search Card when no database cars exist
   return (
-    <div className="w-full h-screen bg-black flex items-center justify-center p-6">
-      <div className="w-full max-w-sm p-8 rounded-3xl bg-black/40 backdrop-blur-md border border-white/20 shadow-[0_0_50px_rgba(255,255,255,0.15)] flex flex-col justify-between text-white">
+    <div className="relative w-full min-h-[85vh] bg-black flex items-center justify-start p-8 md:p-16 overflow-hidden">
+      {/* Background overlay image effect for fallback view */}
+      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1617814076367-b759c7d7e738?q=80&w=2000')] bg-cover bg-center opacity-30 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent pointer-events-none" />
+
+      <div className="relative z-10 w-full max-w-sm p-8 rounded-3xl bg-black/40 backdrop-blur-md border border-white/20 shadow-[0_0_50px_rgba(255,255,255,0.15)] flex flex-col justify-between text-white">
         <div>
           <span className="text-[10px] tracking-widest text-gray-400 uppercase font-bold block mb-4">
             KAYSETRANS AUTO
