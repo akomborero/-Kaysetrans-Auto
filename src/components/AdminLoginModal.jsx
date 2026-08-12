@@ -1,30 +1,72 @@
 import { useState } from 'react';
-import { X, Lock, Mail, Eye, EyeOff, ShieldAlert, ArrowRight } from 'lucide-react';
+import { X, Lock, Mail, Eye, EyeOff, ShieldAlert, ArrowRight, AlertCircle } from 'lucide-react';
 
-export default function AdminLoginModal({ isOpen, onClose }) {
+export default function AdminLoginModal({ isOpen, onClose, onSuccess }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage('');
 
-    // Simulate login logic
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const response = await fetch('https://smart-ar-backend.onrender.com/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || data.detail || 'Invalid email or password');
+      }
+
+      // Store JWT token
+      const token = data.access_token || data.token;
+      if (token) {
+        localStorage.setItem('adminToken', token);
+      }
+
+      // Build user payload
+      const userData = {
+        email: email,
+        name: data.user?.name || data.name || email.split('@')[0],
+        ...data.user,
+      };
+
+      localStorage.setItem('adminUser', JSON.stringify(userData));
+
+      // Trigger onSuccess prop to inform parent App/Navbar state
+      if (onSuccess) {
+        onSuccess(userData);
+      }
+
+      // Dispatch global event so Navbar catches state change instantly
+      window.dispatchEvent(new Event('authChange'));
+
+      // Clean up and close
+      setEmail('');
+      setPassword('');
       onClose();
-    }, 1200);
+    } catch (err) {
+      setErrorMessage(err.message || 'Authentication failed. Please check credentials.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
-      
-      {/* Modal Container */}
-      <div 
+      <div
         className="relative w-full max-w-md bg-white border border-neutral-100 rounded-3xl p-8 md:p-10 shadow-2xl transition-all"
         onClick={(e) => e.stopPropagation()}
       >
@@ -37,7 +79,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
         </button>
 
         {/* Modal Header */}
-        <div className="text-center space-y-2 mb-8">
+        <div className="text-center space-y-2 mb-6">
           <div className="w-12 h-12 bg-neutral-900 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <Lock className="w-6 h-6" />
           </div>
@@ -49,10 +91,16 @@ export default function AdminLoginModal({ isOpen, onClose }) {
           </p>
         </div>
 
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 flex items-center gap-3 text-red-600 text-xs font-bold">
+            <AlertCircle className="w-5 h-5 shrink-0" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
-          
-          {/* Email Input */}
           <div className="space-y-1.5">
             <label className="text-[10px] font-black uppercase text-neutral-400 tracking-wider">
               EMAIL ADDRESS
@@ -70,7 +118,6 @@ export default function AdminLoginModal({ isOpen, onClose }) {
             </div>
           </div>
 
-          {/* Password Input */}
           <div className="space-y-1.5">
             <label className="text-[10px] font-black uppercase text-neutral-400 tracking-wider">
               PASSWORD
@@ -95,7 +142,6 @@ export default function AdminLoginModal({ isOpen, onClose }) {
             </div>
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={isLoading}
@@ -112,12 +158,10 @@ export default function AdminLoginModal({ isOpen, onClose }) {
           </button>
         </form>
 
-        {/* Footer Security Badge */}
         <div className="mt-8 pt-6 border-t border-neutral-100 flex items-center justify-center gap-2 text-[10px] font-extrabold uppercase tracking-widest text-neutral-400">
           <ShieldAlert className="w-3.5 h-3.5 text-neutral-400" />
           <span>AUTHORIZED PERSONNEL ONLY</span>
         </div>
-
       </div>
     </div>
   );

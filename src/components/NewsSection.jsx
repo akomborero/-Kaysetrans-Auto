@@ -1,140 +1,190 @@
-const FEATURED_NEWS = [
-  {
-    id: 1,
-    title: 'Bokaro, Giridih get 71 new police vehicles',
-    publisher: 'TOI',
-    image: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&q=80&w=800'
-  },
-  {
-    id: 2,
-    title: 'ZEV mandate review imminent: government mulls softer sales targets',
-    publisher: null,
-    image: 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&q=80&w=800'
-  },
-  {
-    id: 3,
-    title: 'Audi India confirms new Q3, A5 and Q9 launches: Targets doubling market...',
-    publisher: 'TOI',
-    image: 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&q=80&w=800'
-  },
-  {
-    id: 4,
-    title: 'SC extends mandatory insurance for new cars, bikes: Third-party vs...',
-    publisher: 'mint',
-    image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=800'
-  }
-];
-
-const TRENDING_ARTICLES = [
-  'EchoPark Automotive Relocates North Houston Dealership to Bett...',
-  'Ford needs another Taurus, and the $30K Fathom EV pickup isn\'t ...',
-  'New Vehicles Are Getting Easier to Afford (Comparatively, At Least)',
-  'She Followed ICE\'s Advice to Self-Deport. Five Weeks Later, She W...',
-  'More Americans Have Access to Credit While Debt Growth Has...'
-];
+import { useState, useEffect } from 'react';
 
 export default function NewsSection() {
+  const [news, setNews] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchNews() {
+      const apiKey = '9df1884cd0a44fb7b29297035a4f643f';
+      const query = encodeURIComponent(
+        '(car OR cars OR automotive OR "electric vehicle" OR EV OR "motor vehicle") AND NOT (crime OR shooting OR court OR murder OR ice)'
+      );
+
+      try {
+        const res = await fetch(
+          `https://newsapi.org/v2/everything?q=${query}&language=en&sortBy=publishedAt&pageSize=20&apiKey=${apiKey}`
+        );
+
+        if (!res.ok) throw new Error('Failed to fetch news');
+
+        const data = await res.json();
+        setNews(data.articles || []);
+      } catch (e) {
+        console.error('Error fetching automotive news:', e);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchNews();
+  }, []);
+
+  // Filter out removed or broken articles
+  const validNews = news.filter(
+    (article) =>
+      article?.urlToImage &&
+      article?.title &&
+      article?.url &&
+      !article.title.includes('[Removed]') &&
+      article.urlToImage.startsWith('http')
+  );
+
+  const gridArticles = validNews.slice(0, 4);
+  const trendingArticles = validNews.slice(4, 9);
+  const featuredArticle = validNews[9] || validNews[0];
+
   return (
-    <section className="bg-white text-black py-12 px-6 md:px-8 border-t border-neutral-100">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <section id="news" className="px-6 py-24 bg-white border-t border-gray-100 scroll-mt-20">
+      <div className="container mx-auto">
         
-        {/* Top Grid & Sidebar Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-          
-          {/* Left Column: 2x2 Grid of News Cards */}
-          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {FEATURED_NEWS.map((item) => (
-              <div 
-                key={item.id} 
-                className="relative aspect-16/10 rounded-3xl overflow-hidden group cursor-pointer shadow-sm"
-              >
-                <img 
-                  src={item.image} 
-                  alt={item.title} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/20 to-transparent" />
-
-                {item.publisher && (
-                  <span className={`absolute top-4 left-4 text-[10px] font-black uppercase px-2 py-0.5 rounded ${
-                    item.publisher === 'TOI' ? 'bg-red-600 text-white' : 'bg-orange-500 text-white'
-                  }`}>
-                    {item.publisher}
-                  </span>
-                )}
-
-                <div className="absolute bottom-4 left-4 right-4">
-                  <h3 className="text-white text-sm font-extrabold leading-snug line-clamp-2">
-                    {item.title}
-                  </h3>
-                </div>
-              </div>
-            ))}
+        {/* Header */}
+        <div className="flex items-center justify-between mb-12">
+          <h2 className="text-4xl font-black text-gray-900 italic tracking-tighter uppercase">
+            News & <span className="text-black">Reviews</span>
+          </h2>
+          <div className="hidden md:flex gap-2 items-center">
+            <span className="w-3 h-3 rounded-full bg-black animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+              Live Auto Updates
+            </span>
           </div>
+        </div>
 
-          {/* Right Column: Trending Near You Sidebar */}
-          <div className="bg-neutral-50/80 rounded-3xl p-8 border border-neutral-100 flex flex-col justify-between">
-            <div>
-              <h3 className="text-xs font-black uppercase tracking-widest text-neutral-400 mb-6">
-                TRENDING NEAR YOU
-              </h3>
+        {loading ? (
+          <div className="text-center py-16">
+            <p className="text-sm font-bold text-gray-400 uppercase tracking-widest animate-pulse">
+              Loading live automotive news...
+            </p>
+          </div>
+        ) : validNews.length === 0 ? (
+          <div className="text-center py-16 border-2 border-dashed border-gray-200 rounded-3xl">
+            <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">
+              No live automotive news available right now.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
+            
+            {/* Left Column: Grid & Featured Story */}
+            <div className="lg:col-span-2 space-y-12">
+              
+              {/* 2x2 Article Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {gridArticles.map((article, index) => (
+                  <a
+                    href={article.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    key={index}
+                    className="group cursor-pointer block"
+                  >
+                    <div className="relative aspect-video rounded-3xl overflow-hidden mb-4 shadow-lg bg-gray-900">
+                      <img 
+                        src={article.urlToImage} 
+                        alt={article.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent" />
+                      
+                      {article.source?.name && (
+                        <span className="absolute top-4 left-4 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded">
+                          {article.source.name}
+                        </span>
+                      )}
 
-              <div className="space-y-6">
-                {TRENDING_ARTICLES.map((title, index) => (
-                  <div key={index} className="flex gap-4 items-start group cursor-pointer">
-                    <span className="text-2xl font-black text-neutral-300 group-hover:text-black transition-colors leading-none">
-                      0{index + 1}
-                    </span>
-                    <p className="text-xs font-bold text-neutral-900 leading-tight group-hover:text-neutral-600 transition-colors line-clamp-2">
-                      {title}
-                    </p>
-                  </div>
+                      <div className="absolute bottom-0 p-6">
+                        <h3 className="text-white text-base font-extrabold leading-snug group-hover:text-red-400 transition-colors line-clamp-2">
+                          {article.title}
+                        </h3>
+                      </div>
+                    </div>
+                  </a>
                 ))}
               </div>
+
+              {/* Bottom Featured Banner */}
+              {featuredArticle && (
+                <a
+                  href={featuredArticle.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block bg-gray-900 rounded-[40px] p-8 md:p-12 text-white relative overflow-hidden group cursor-pointer"
+                >
+                  <div className="relative z-10 max-w-lg">
+                    <span className="text-red-500 font-black text-xs uppercase tracking-[0.3em]">
+                      FEATURED AUTO STORY
+                    </span>
+                    <h3 className="text-2xl md:text-3xl font-black mt-4 mb-6 italic line-clamp-3 leading-tight uppercase">
+                      {featuredArticle.title}
+                    </h3>
+                    <div className="flex items-center gap-4 font-black uppercase text-xs tracking-widest group-hover:gap-6 transition-all">
+                      <span className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center font-bold">
+                        →
+                      </span>
+                      Read Full Story
+                    </div>
+                  </div>
+
+                  {/* Background Image */}
+                  <img
+                    src={featuredArticle.urlToImage}
+                    className="absolute right-0 top-0 h-full w-2/3 object-cover opacity-25 group-hover:scale-105 transition-all duration-700"
+                    alt=""
+                  />
+                  <div className="absolute inset-0 bg-linear-to-r from-gray-900 via-gray-900/90 to-transparent z-0" />
+                </a>
+              )}
             </div>
 
-            <button className="w-full mt-8 py-3.5 px-6 rounded-full border-2 border-black bg-white text-black text-xs font-black uppercase tracking-wider hover:bg-black hover:text-white transition-all cursor-pointer">
-              SEE ALL NEWS
-            </button>
-          </div>
-
-        </div>
-
-        {/* Bottom Banner: FEATURED STORY Card (Matching Screenshot 330) */}
-        <div className="relative rounded-3xl overflow-hidden bg-black text-white min-h-[320px] flex items-center p-8 md:p-12">
-          {/* Background Image with Dark Gradient Overlay */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center opacity-40 z-0"
-            style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&q=80&w=1600')`
-            }}
-          >
-            <div className="absolute inset-0 bg-linear-to-r from-black via-black/80 to-transparent" />
-          </div>
-
-          {/* Foreground Story Content */}
-          <div className="relative z-10 max-w-xl space-y-6">
-            <span className="text-[10px] font-black tracking-widest uppercase text-gray-300 block">
-              FEATURED STORY
-            </span>
-
-            <h2 className="text-2xl md:text-3xl font-black italic uppercase tracking-tight leading-tight">
-              Black Residents Warned of Abusive Cops for Years. Then Police Shot and Killed a...
-            </h2>
-
-            <a 
-              href="#read-story" 
-              className="inline-flex items-center gap-3 group cursor-pointer"
-            >
-              <div className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center group-hover:scale-110 transition-transform">
-                &rarr;
+            {/* Right Column: Trending List */}
+            <div className="bg-gray-50 rounded-[40px] p-10 h-fit flex flex-col justify-between border border-gray-100">
+              <div>
+                <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] mb-8">
+                  Trending Near You
+                </h3>
+                <div className="divide-y divide-gray-200">
+                  {trendingArticles.map((article, i) => (
+                    <a
+                      href={article.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      key={i}
+                      className="py-6 flex gap-6 group cursor-pointer first:pt-0"
+                    >
+                      <span className="text-3xl font-black text-gray-300 group-hover:text-red-600 transition-colors tabular-nums">
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <p className="text-xs font-bold text-gray-800 leading-snug group-hover:text-gray-600 transition-colors line-clamp-2">
+                        {article.title}
+                      </p>
+                    </a>
+                  ))}
+                </div>
               </div>
-              <span className="text-xs font-extrabold uppercase tracking-wider text-white group-hover:underline">
-                READ FULL STORY
-              </span>
-            </a>
+
+              <a
+                href="https://news.google.com/search?q=automotive"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full mt-10 py-5 border-[3px] border-black rounded-2xl font-black text-xs uppercase tracking-[0.2em] text-black hover:bg-black hover:text-white transition-all duration-300 active:scale-[0.98] text-center block"
+              >
+                See all news
+              </a>
+            </div>
+
           </div>
-        </div>
+        )}
 
       </div>
     </section>

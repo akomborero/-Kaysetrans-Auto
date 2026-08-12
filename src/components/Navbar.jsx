@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom';
-import { User, LogOut } from 'lucide-react';
+import { User } from 'lucide-react';
 import AdminLoginModal from './AdminLoginModal';
 
 export default function Navbar({ isAuthenticated, user, onLogin, onLogout, isLoginOpen, setIsLoginOpen }) {
+  // Get user name or email to display (e.g. mmmfundaedza.tm or tinotendakatsande)
+  const displayName = user?.email || user?.name || user?.username || 'tinotendakatsande';
+
   return (
     <>
       <header className="bg-white border-b border-neutral-200 sticky top-0 z-50">
@@ -30,7 +33,7 @@ export default function Navbar({ isAuthenticated, user, onLogin, onLogout, isLog
 
             {/* Authenticated Admin Link */}
             {isAuthenticated && (
-              <Link to="/admin/inventory" className="font-black text-black hover:opacity-70 transition-opacity underline decoration-2 underline-offset-4">
+              <Link to="/admin/inventory" className="font-black text-black hover:opacity-70 transition-opacity">
                 Manage Inventory
               </Link>
             )}
@@ -39,16 +42,15 @@ export default function Navbar({ isAuthenticated, user, onLogin, onLogout, isLog
           {/* User Auth Section */}
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
-              <div className="flex items-center gap-4">
-                <span className="text-xs font-bold text-neutral-500 hidden sm:inline">
-                  {user?.email || 'tinotendakatsande'}
+              <div className="flex items-center gap-3 text-xs md:text-sm">
+                <span className="font-bold text-neutral-500">
+                  Hi, <span className="text-black font-extrabold">{displayName}</span>
                 </span>
                 <button
                   onClick={onLogout}
-                  className="text-sm font-extrabold text-black hover:opacity-70 transition-opacity flex items-center gap-1.5 cursor-pointer"
+                  className="font-extrabold text-black hover:opacity-70 transition-opacity cursor-pointer ml-1"
                 >
-                  <span>Sign Out</span>
-                  <LogOut className="w-4 h-4" />
+                  Sign Out
                 </button>
               </div>
             ) : (
