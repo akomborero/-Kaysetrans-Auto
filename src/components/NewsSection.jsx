@@ -12,16 +12,43 @@ export default function NewsSection() {
       );
 
       try {
+        // Try Primary NewsAPI (Works on localhost)
         const res = await fetch(
           `https://newsapi.org/v2/everything?q=${query}&language=en&sortBy=publishedAt&pageSize=20&apiKey=${apiKey}`
         );
 
-        if (!res.ok) throw new Error('Failed to fetch news');
-
-        const data = await res.json();
-        setNews(data.articles || []);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.articles && data.articles.length > 0) {
+            setNews(data.articles);
+            return;
+          }
+        }
+        throw new Error('NewsAPI restricted or limited');
       } catch (e) {
-        console.error('Error fetching automotive news:', e);
+        console.warn('Primary news fetch failed, switching to fallback feed...', e);
+        
+        // Fallback live feed for Vercel/Production
+        try {
+          const rssUrl = encodeURIComponent('https://www.autocar.co.uk/rss');
+          const fallbackRes = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${rssUrl}`);
+          const fallbackData = await fallbackRes.json();
+
+          if (fallbackData.items) {
+            const formattedArticles = fallbackData.items.map((item) => ({
+              title: item.title,
+              url: item.link,
+              urlToImage:
+                item.thumbnail ||
+                item.enclosure?.link ||
+                'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80',
+              source: { name: fallbackData.feed?.title || 'Autocar' },
+            }));
+            setNews(formattedArticles);
+          }
+        } catch (fallbackErr) {
+          console.error('Fallback news fetch failed:', fallbackErr);
+        }
       } finally {
         setLoading(false);
       }
