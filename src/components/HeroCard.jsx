@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function HeroCard() {
   const [cars, setCars] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
 
   // Form states for fallback view
   const [condition, setCondition] = useState('');
@@ -44,6 +47,8 @@ export default function HeroCard() {
 
   // Helper to extract image URL safely
   const getCarImage = (car) => {
+    if (car.image) return car.image;
+    if (car.imageUrl) return car.imageUrl;
     if (car.images && car.images.length > 0) {
       return car.images[0];
     }
@@ -53,7 +58,7 @@ export default function HeroCard() {
         car.car_images[0]?.image_url
       );
     }
-    return 'https://images.unsplash.com/photo-1590362891991-f776e747a588';
+    return '';
   };
 
   // IF CARS EXIST: Render Full Screen Auto Carousel
@@ -67,16 +72,22 @@ export default function HeroCard() {
           const imgUrl = getCarImage(car);
           return (
             <div
-              key={car.id || idx}
-              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+              key={car.id || car._id || idx}
+              className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
                 idx === currentIndex ? 'opacity-100 z-0' : 'opacity-0 -z-10'
               }`}
             >
-              <img
-                src={imgUrl}
-                alt={`${car.make} ${car.model}`}
-                className="w-full h-full object-cover scale-105"
-              />
+              {imgUrl ? (
+                <img
+                  src={imgUrl}
+                  alt={`${car.make || ''} ${car.model || ''}`}
+                  className="w-full h-full object-cover object-center scale-105"
+                />
+              ) : (
+                <div className="w-full h-full bg-neutral-900 flex items-center justify-center text-neutral-600 font-black">
+                  NO IMAGE AVAILABLE
+                </div>
+              )}
               <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/30" />
             </div>
@@ -102,9 +113,11 @@ export default function HeroCard() {
             </h1>
 
             <p className="text-xl md:text-3xl font-bold tracking-wider text-neutral-300 flex items-center gap-3">
-              <span>{activeCar.year || 2024} EDITION</span>
+              <span>{activeCar.year || 'N/A'} EDITION</span>
               <span className="text-red-600">•</span>
-              <span className="text-white font-black">${activeCar.price?.toLocaleString()}</span>
+              <span className="text-white font-black">
+                ${activeCar.price ? Number(activeCar.price).toLocaleString() : '0'}
+              </span>
             </p>
 
             {activeCar.description && (
@@ -114,12 +127,18 @@ export default function HeroCard() {
             )}
 
             <div className="flex flex-wrap gap-4 pt-4">
-              <button className="px-8 py-4 bg-white text-black font-black text-xs uppercase tracking-wider rounded-full hover:bg-neutral-200 transition-all shadow-xl cursor-pointer">
+              <Link
+                to={`/cars/${activeCar.id || activeCar._id}`}
+                className="px-8 py-4 bg-white text-black font-black text-xs uppercase tracking-wider rounded-full hover:bg-neutral-200 transition-all shadow-xl cursor-pointer text-center"
+              >
                 VIEW DETAILS
-              </button>
-              <button className="px-8 py-4 bg-black/40 backdrop-blur-md border border-white/30 text-white font-black text-xs uppercase tracking-wider rounded-full hover:bg-white/10 transition-all cursor-pointer">
+              </Link>
+              <Link
+                to="/cars"
+                className="px-8 py-4 bg-black/40 backdrop-blur-md border border-white/30 text-white font-black text-xs uppercase tracking-wider rounded-full hover:bg-white/10 transition-all cursor-pointer text-center"
+              >
                 BROWSE INVENTORY
-              </button>
+              </Link>
             </div>
           </div>
 
@@ -130,7 +149,7 @@ export default function HeroCard() {
                 <button
                   key={idx}
                   onClick={() => setCurrentIndex(idx)}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                  className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                     idx === currentIndex ? 'w-10 bg-red-600' : 'w-2 bg-white/40 hover:bg-white'
                   }`}
                 />
@@ -221,7 +240,10 @@ export default function HeroCard() {
           </div>
         </div>
 
-        <button className="w-full py-3.5 px-4 rounded-xl border border-white/30 bg-white/5 hover:bg-white hover:text-black transition-all duration-300 flex items-center justify-between group cursor-pointer">
+        <button 
+          onClick={() => navigate('/cars')}
+          className="w-full py-3.5 px-4 rounded-xl border border-white/30 bg-white/5 hover:bg-white hover:text-black transition-all duration-300 flex items-center justify-between group cursor-pointer"
+        >
           <span className="text-xs font-bold uppercase tracking-wider">Find Your Dream Car</span>
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </button>
