@@ -3,7 +3,8 @@ import { User } from 'lucide-react';
 import AdminLoginModal from './AdminLoginModal';
 
 export default function Navbar({ isAuthenticated, user, onLogin, onLogout, isLoginOpen, setIsLoginOpen }) {
-  const displayName = user?.email || user?.name || user?.username || 'tinotendakatsande';
+  // Directly pull the logged-in user's email, or fall back to user object properties
+  const displayName = user?.email || user?.user?.email || user?.name || user?.username || 'Admin';
 
   return (
     <>

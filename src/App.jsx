@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -15,15 +15,53 @@ export default function App() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [user, setUser] = useState(null);
 
-  const handleLogin = () => {
+  // Load actual user session from storage on mount & on auth changes
+  const loadUserFromStorage = () => {
+    const storedUser = localStorage.getItem('adminUser') || localStorage.getItem('user');
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+
+    if (token && storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        setIsAuthenticated(true);
+      } catch (err) {
+        console.error('Failed to parse user session:', err);
+        handleLogout();
+      }
+    } else {
+      setIsAuthenticated(false);
+      setUser(null);
+    }
+  };
+
+  useEffect(() => {
+    loadUserFromStorage();
+
+    // Event listener to synchronize auth changes instantly across components
+    const handleAuthChange = () => {
+      loadUserFromStorage();
+    };
+
+    window.addEventListener('authChange', handleAuthChange);
+    return () => window.removeEventListener('authChange', handleAuthChange);
+  }, []);
+
+  // Updated handleLogin accepts the logged-in user object passed from AdminLoginModal
+  const handleLogin = (userData) => {
+    setUser(userData);
     setIsAuthenticated(true);
-    setUser({ email: 'tinotendakatsande' });
     setIsLoginOpen(false);
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('token');
+    localStorage.removeItem('adminUser');
+    localStorage.removeItem('user');
     setIsAuthenticated(false);
     setUser(null);
+    window.dispatchEvent(new Event('authChange'));
   };
 
   return (

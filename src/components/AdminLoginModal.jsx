@@ -34,26 +34,27 @@ export default function AdminLoginModal({ isOpen, onClose, onSuccess }) {
       const token = data.access_token || data.token;
       if (token) {
         localStorage.setItem('adminToken', token);
+        localStorage.setItem('token', token);
       }
 
-      // Build user payload
+      // Build user payload directly using input email if backend omits it
       const userData = {
-        email: email,
+        email: data.user?.email || data.email || email,
         name: data.user?.name || data.name || email.split('@')[0],
         ...data.user,
       };
 
+      // Store in both keys for compatibility
       localStorage.setItem('adminUser', JSON.stringify(userData));
+      localStorage.setItem('user', JSON.stringify(userData));
 
-      // Trigger onSuccess prop to inform parent App/Navbar state
       if (onSuccess) {
         onSuccess(userData);
       }
 
-      // Dispatch global event so Navbar catches state change instantly
+      // Notify application of auth change
       window.dispatchEvent(new Event('authChange'));
 
-      // Clean up and close
       setEmail('');
       setPassword('');
       onClose();
@@ -70,7 +71,6 @@ export default function AdminLoginModal({ isOpen, onClose, onSuccess }) {
         className="relative w-full max-w-md bg-white border border-neutral-100 rounded-3xl p-8 md:p-10 shadow-2xl transition-all"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute top-6 right-6 p-2 rounded-full text-neutral-400 hover:text-black hover:bg-neutral-100 transition-colors cursor-pointer"
@@ -78,7 +78,6 @@ export default function AdminLoginModal({ isOpen, onClose, onSuccess }) {
           <X className="w-5 h-5" />
         </button>
 
-        {/* Modal Header */}
         <div className="text-center space-y-2 mb-6">
           <div className="w-12 h-12 bg-neutral-900 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <Lock className="w-6 h-6" />
@@ -91,7 +90,6 @@ export default function AdminLoginModal({ isOpen, onClose, onSuccess }) {
           </p>
         </div>
 
-        {/* Error Message */}
         {errorMessage && (
           <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 flex items-center gap-3 text-red-600 text-xs font-bold">
             <AlertCircle className="w-5 h-5 shrink-0" />
@@ -99,7 +97,6 @@ export default function AdminLoginModal({ isOpen, onClose, onSuccess }) {
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-1.5">
             <label className="text-[10px] font-black uppercase text-neutral-400 tracking-wider">
