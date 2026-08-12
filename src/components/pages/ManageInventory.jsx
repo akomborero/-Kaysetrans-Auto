@@ -58,6 +58,7 @@ export default function ManageInventory() {
     if (files.length === 0) return;
 
     const newImagePreviews = files.map((file) => ({
+      id: `${file.name}-${Date.now()}-${Math.random()}`,
       file,
       previewUrl: URL.createObjectURL(file)
     }));
@@ -65,8 +66,8 @@ export default function ManageInventory() {
     setSelectedImages((prev) => [...prev, ...newImagePreviews]);
   };
 
-  const handleRemoveImage = (indexToRemove) => {
-    setSelectedImages((prev) => prev.filter((_, index) => index !== indexToRemove));
+  const handleRemoveImage = (idToRemove) => {
+    setSelectedImages((prev) => prev.filter((img) => img.id !== idToRemove));
   };
 
   // Create Car Handler
@@ -143,7 +144,7 @@ export default function ManageInventory() {
       });
 
       if (response.ok) {
-        setFleet(fleet.filter((car) => car.id !== id));
+        setFleet(fleet.filter((car) => (car.id || car._id) !== id));
       } else {
         const err = await response.json();
         alert(err.message || 'Failed to delete car');
@@ -338,16 +339,16 @@ export default function ManageInventory() {
               {/* Uploaded Gallery Thumbnails */}
               {selectedImages.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
-                  {selectedImages.map((img, index) => (
-                    <div key={index} className="relative group rounded-xl overflow-hidden border border-neutral-800 aspect-video bg-neutral-900">
+                  {selectedImages.map((img) => (
+                    <div key={img.id} className="relative group rounded-xl overflow-hidden border border-neutral-800 aspect-video bg-neutral-900">
                       <img
                         src={img.previewUrl}
-                        alt={`Upload Preview ${index}`}
+                        alt="Upload Preview"
                         className="w-full h-full object-cover"
                       />
                       <button
                         type="button"
-                        onClick={() => handleRemoveImage(index)}
+                        onClick={() => handleRemoveImage(img.id)}
                         className="absolute top-2 right-2 bg-black/80 hover:bg-red-600 text-white p-1.5 rounded-lg transition-colors"
                       >
                         <X className="w-3.5 h-3.5" />
@@ -395,31 +396,34 @@ export default function ManageInventory() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-900 text-xs font-bold">
-                  {fleet.map((car) => (
-                    <tr key={car.id} className="hover:bg-neutral-900/40 transition-colors">
-                      <td className="p-5 font-black uppercase italic text-sm text-white flex items-center gap-3">
-                        {car.images?.[0] && (
-                          <img 
-                            src={car.images[0]} 
-                            alt={car.model} 
-                            className="w-10 h-10 rounded-lg object-cover border border-neutral-800"
-                          />
-                        )}
-                        <span>{car.make} {car.model}</span>
-                      </td>
-                      <td className="p-5 text-neutral-400">{car.year}</td>
-                      <td className="p-5 text-white font-black">${car.price?.toLocaleString()}</td>
-                      <td className="p-5 text-neutral-400 capitalize">{car.status || 'available'}</td>
-                      <td className="p-5 text-right">
-                        <button
-                          onClick={() => handleDeleteCar(car.id)}
-                          className="p-2.5 bg-neutral-900 hover:bg-red-950 text-neutral-400 hover:text-red-500 rounded-xl transition-colors cursor-pointer border border-neutral-800"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {fleet.map((car, index) => {
+                    const carId = car.id || car._id || index;
+                    return (
+                      <tr key={carId} className="hover:bg-neutral-900/40 transition-colors">
+                        <td className="p-5 font-black uppercase italic text-sm text-white flex items-center gap-3">
+                          {car.images?.[0] && (
+                            <img 
+                              src={car.images[0]} 
+                              alt={car.model} 
+                              className="w-10 h-10 rounded-lg object-cover border border-neutral-800"
+                            />
+                          )}
+                          <span>{car.make} {car.model}</span>
+                        </td>
+                        <td className="p-5 text-neutral-400">{car.year}</td>
+                        <td className="p-5 text-white font-black">${car.price?.toLocaleString()}</td>
+                        <td className="p-5 text-neutral-400 capitalize">{car.status || 'available'}</td>
+                        <td className="p-5 text-right">
+                          <button
+                            onClick={() => handleDeleteCar(carId)}
+                            className="p-2.5 bg-neutral-900 hover:bg-red-950 text-neutral-400 hover:text-red-500 rounded-xl transition-colors cursor-pointer border border-neutral-800"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
