@@ -1,68 +1,142 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+
+const FEATURED_CARS = [
+  {
+    id: 1,
+    make: 'MAZDA',
+    model: 'CX5',
+    price: 9500,
+    year: '2016',
+    mileage: '65,000 km',
+    transmission: 'Automatic',
+    fuel: 'Petrol',
+    image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=600'
+  },
+  {
+    id: 2,
+    make: 'TOYOTA',
+    model: 'AXIO',
+    price: 7500,
+    year: '2011',
+    mileage: '80,000 km',
+    transmission: 'Automatic',
+    fuel: 'Petrol',
+    image: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&q=80&w=600'
+  },
+  {
+    id: 3,
+    make: 'HONDA',
+    model: 'FIT 10TH',
+    price: 4500,
+    year: '2012',
+    mileage: '95,000 km',
+    transmission: 'Automatic',
+    fuel: 'Petrol',
+    image: 'https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&q=80&w=600'
+  },
+  {
+    id: 4,
+    make: 'TOYOTA',
+    model: 'COROLLA',
+    price: 4900,
+    year: '2004',
+    mileage: '120,000 km',
+    transmission: 'Manual',
+    fuel: 'Petrol',
+    image: 'https://images.unsplash.com/photo-1623869675781-80aa31012a5a?auto=format&fit=crop&q=80&w=600'
+  },
+  {
+    id: 5,
+    make: 'TOYOTA',
+    model: 'ALLION',
+    price: 6800,
+    year: '2006',
+    mileage: '105,000 km',
+    transmission: 'Automatic',
+    fuel: 'Petrol',
+    image: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&q=80&w=600'
+  },
+  {
+    id: 6,
+    make: 'TOYOTA',
+    model: 'VITZ',
+    price: 4500,
+    year: '2010',
+    mileage: '88,000 km',
+    transmission: 'Automatic',
+    fuel: 'Petrol',
+    image: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=600'
+  },
+  {
+    id: 7,
+    make: 'NISSAN',
+    model: 'ADVAN',
+    price: 4500,
+    year: '2013',
+    mileage: '110,000 km',
+    transmission: 'Automatic',
+    fuel: 'Petrol',
+    image: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&q=80&w=600'
+  },
+  {
+    id: 8,
+    make: 'TOYOTA',
+    model: 'RACTIS',
+    price: 3800,
+    year: '2009',
+    mileage: '98,000 km',
+    transmission: 'Automatic',
+    fuel: 'Petrol',
+    image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600'
+  }
+];
 
 export default function CarsForSale() {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMake, setSelectedMake] = useState('All');
   const [maxPrice, setMaxPrice] = useState('50000');
 
-  const fetchCars = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch('https://smart-ar-backend.onrender.com/api/cars');
-
-      if (!res.ok) {
-        throw new Error(`Failed to load inventory (HTTP ${res.status})`);
-      }
-
-      const data = await res.json();
-
-      if (Array.isArray(data) && data.length > 0) {
-        const formattedCars = data.map((car) => {
-          const primaryImg =
-            car.image ||
-            car.imageUrl ||
-            car.images?.[0] ||
-            car.car_images?.find((img) => img.is_primary)?.image_url ||
-            car.car_images?.[0]?.image_url ||
-            'https://images.unsplash.com/photo-1590362891991-f776e747a588';
-
-          return {
-            id: car.id || car._id,
-            make: car.make || car.title?.split(' ')[0] || 'UNKNOWN',
-            model: car.model || car.title?.split(' ').slice(1).join(' ') || 'MODEL',
-            price: Number(car.price) || 0,
-            year: car.year && car.year !== 0 && car.year !== '0' ? String(car.year) : 'N/A',
-            mileage: car.mileage || 'N/A',
-            transmission: car.transmission || 'Automatic',
-            fuel: car.fuel || 'Petrol',
-            image: primaryImg,
-          };
-        });
-
-        setCars(formattedCars);
-      } else {
-        setCars([]);
-      }
-    } catch (err) {
-      console.error('Error fetching cars from backend:', err);
-      setError(
-        'Unable to connect to live inventory. The server may be starting up or unavailable.'
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchCars();
+    fetch('https://smart-ar-backend.onrender.com/api/cars')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          const formattedCars = data.map((car) => {
+            const primaryImg =
+              car.image ||
+              car.imageUrl ||
+              car.images?.[0] ||
+              car.car_images?.find((img) => img.is_primary)?.image_url ||
+              car.car_images?.[0]?.image_url ||
+              'https://images.unsplash.com/photo-1590362891991-f776e747a588';
+
+            return {
+              id: car.id || car._id,
+              make: car.make || car.title?.split(' ')[0] || 'UNKNOWN',
+              model: car.model || car.title?.split(' ').slice(1).join(' ') || 'MODEL',
+              price: Number(car.price) || 0,
+              year: car.year && car.year !== 0 && car.year !== '0' ? String(car.year) : 'N/A',
+              mileage: car.mileage || 'N/A',
+              transmission: car.transmission || 'Automatic',
+              fuel: car.fuel || 'Petrol',
+              image: primaryImg,
+            };
+          });
+          setCars(formattedCars);
+        } else {
+          setCars(FEATURED_CARS);
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching cars:', err);
+        setCars(FEATURED_CARS);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const availableMakes = ['All', ...new Set(cars.map((car) => car.make))].filter(Boolean);
@@ -164,35 +238,16 @@ export default function CarsForSale() {
               <div className="border border-dashed border-neutral-200 rounded-3xl p-16 flex flex-col items-center justify-center space-y-3">
                 <Loader2 className="w-6 h-6 animate-spin text-purple-700" />
                 <p className="text-xs font-black uppercase tracking-widest text-neutral-400">
-                  Fetching Live Inventory From Server...
+                  Loading Live Showroom Inventory...
                 </p>
-              </div>
-            ) : error ? (
-              <div className="border border-dashed border-neutral-200 rounded-3xl p-12 text-center space-y-4 max-w-lg mx-auto">
-                <AlertCircle className="w-8 h-8 text-neutral-400 mx-auto" />
-                <div className="space-y-1">
-                  <p className="text-xs font-black uppercase tracking-widest text-neutral-600">
-                    Connection Error
-                  </p>
-                  <p className="text-xs text-neutral-400 font-medium">
-                    {error}
-                  </p>
-                </div>
-                <button
-                  onClick={fetchCars}
-                  className="inline-flex items-center gap-2 bg-black text-white px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-wider hover:bg-neutral-800 transition-colors cursor-pointer"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  Retry Loading
-                </button>
               </div>
             ) : filteredCars.length === 0 ? (
               <div className="border border-dashed border-neutral-200 rounded-3xl p-16 text-center space-y-3">
                 <p className="text-sm font-black text-neutral-400 uppercase tracking-wider">
-                  No vehicles found in database matching criteria.
+                  Our showroom has no vehicles matching your criteria.
                 </p>
                 <p className="text-xs text-neutral-400 font-medium">
-                  Try adjusting your search terms or filter selection.
+                  Try adjusting your filters or search terms.
                 </p>
               </div>
             ) : (
