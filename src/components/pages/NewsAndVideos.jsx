@@ -14,57 +14,103 @@ export default function NewsAndVideos() {
         '(car OR cars OR automotive OR "electric vehicle" OR EV OR "motor vehicle") AND NOT (crime OR shooting OR court OR murder OR ice)'
       );
 
+      // Helper function to map raw articles into your component's state format
+      const formatArticles = (articles) => {
+        return articles
+          .filter(
+            (art) =>
+              art.urlToImage &&
+              art.title &&
+              art.url &&
+              !art.title.includes('[Removed]') &&
+              art.urlToImage.startsWith('http')
+          )
+          .map((art, idx) => {
+            const textContent = `${art.title || ''} ${art.description || ''} ${art.content || ''}`;
+            const wordCount = textContent.trim().split(/\s+/).length;
+            const estimatedMinutes = Math.max(1, Math.ceil(wordCount / 200));
+
+            const formattedDate = art.publishedAt
+              ? new Date(art.publishedAt)
+                  .toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
+                  .toUpperCase()
+              : 'RECENT';
+
+            return {
+              id: art.url || String(idx),
+              category: art.source?.name ? art.source.name.toUpperCase().slice(0, 20) : 'AUTOMOTIVE',
+              title: art.title,
+              excerpt: art.description || 'Click to read full story on the original news source.',
+              date: formattedDate,
+              readTime: `${estimatedMinutes} MIN READ`,
+              image: art.urlToImage,
+              featured: idx === 0,
+              url: art.url,
+              author: art.author || art.source?.name || 'Automotive News',
+            };
+          });
+      };
+
       try {
         setLoading(true);
         setError(null);
 
+        // Try primary NewsAPI fetch
         const res = await fetch(
           `https://newsapi.org/v2/everything?q=${query}&language=en&sortBy=publishedAt&pageSize=12&apiKey=${apiKey}`
         );
 
-        if (!res.ok) {
-          throw new Error(`Unable to fetch live news (${res.status})`);
+        if (res.ok) {
+          const data = await res.json();
+          const transformed = formatArticles(data.articles || []);
+          if (transformed.length > 0) {
+            setMediaArticles(transformed);
+            return;
+          }
         }
 
-        const data = await res.json();
-        
-        const valid = (data.articles || []).filter(
-          (art) => art.urlToImage && art.title && art.url && !art.title.includes('[Removed]')
-        );
-
-        if (valid.length === 0) {
-          throw new Error('No live news articles found at this moment.');
-        }
-
-        const transformed = valid.map((art, idx) => {
-          const textContent = `${art.title || ''} ${art.description || ''} ${art.content || ''}`;
-          const wordCount = textContent.trim().split(/\s+/).length;
-          const estimatedMinutes = Math.max(1, Math.ceil(wordCount / 200));
-
-          const formattedDate = art.publishedAt
-            ? new Date(art.publishedAt)
-                .toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
-                .toUpperCase()
-            : 'RECENT';
-
-          return {
-            id: art.url || String(idx),
-            category: art.source?.name ? art.source.name.toUpperCase().slice(0, 20) : 'AUTOMOTIVE',
-            title: art.title,
-            excerpt: art.description || 'Click to read full story on the original news source.',
-            date: formattedDate,
-            readTime: `${estimatedMinutes} MIN READ`,
-            image: art.urlToImage,
-            featured: idx === 0,
-            url: art.url,
-            author: art.author || art.source?.name || 'Automotive News'
-          };
-        });
-
-        setMediaArticles(transformed);
+        throw new Error('NewsAPI limited or unavailable on production domain');
       } catch (err) {
-        console.error('Live news fetch error:', err);
-        setError(err.message || 'Failed to load live articles.');
+        console.warn('NewsAPI primary fetch failed, switching to live RSS fallback...', err);
+
+        // Fallback live RSS feed via rss2json (Production-safe)
+        try {
+          const rssUrl = encodeURIComponent('https://www.autocar.co.uk/rss');
+          const fallbackRes = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${rssUrl}`);
+          
+          if (!fallbackRes.ok) {
+            throw new Error('Failed to reach fallback news service.');
+          }
+
+          const fallbackData = await fallbackRes.json();
+
+          if (fallbackData.items && fallbackData.items.length > 0) {
+            const rssArticles = fallbackData.items.map((item) => ({
+              title: item.title,
+              description: item.description?.replace(/<[^>]*>?/gm, '') || item.content?.replace(/<[^>]*>?/gm, ''),
+              url: item.link,
+              urlToImage:
+                item.thumbnail ||
+                item.enclosure?.link ||
+                'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80',
+              publishedAt: item.pubDate,
+              source: { name: fallbackData.feed?.title || 'Autocar' },
+              author: item.author || 'Autocar Editorial',
+            }));
+
+            const transformedFallback = formatArticles(rssArticles);
+
+            if (transformedFallback.length > 0) {
+              setMediaArticles(transformedFallback);
+              return;
+            }
+          }
+
+          throw new Error('No articles found in fallback news feed.');
+        } catch (fallbackErr) {
+          console.error('Fallback fetch error:', fallbackErr);
+          setError('Unable to load live articles at this moment.');
+        }
       } finally {
         setLoading(false);
       }
@@ -83,7 +129,7 @@ export default function NewsAndVideos() {
         <div className="space-y-4 border-b border-neutral-100 pb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2">
             <span className="text-xs font-black uppercase tracking-widest text-neutral-400">
-              KAYSETRANS JOURNAL & MEDIA Hub
+              KAYSETRANS JOURNAL & MEDIA HUB
             </span>
             <h1 className="text-4xl md:text-6xl font-black italic uppercase tracking-tight">
               NEWS & <span className="text-neutral-400">UPDATES</span>
