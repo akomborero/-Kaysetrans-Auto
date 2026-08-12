@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './components/pages/Home';
@@ -45,7 +45,18 @@ export default function App() {
           <Route path="/about" element={<AboutUs />} />
           <Route path="/news" element={<NewsAndVideos />} />
           <Route path="/sell" element={<SellYourCar />} />
-          <Route path="/admin/inventory" element={<ManageInventory />} />
+          
+          {/* Admin Protected Route */}
+          <Route 
+            path="/admin/inventory" 
+            element={
+              isAuthenticated ? (
+                <ManageInventory />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            } 
+          />
         </Routes>
       </main>
 
