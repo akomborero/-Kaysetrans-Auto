@@ -3,43 +3,44 @@ import { User } from 'lucide-react';
 import AdminLoginModal from './AdminLoginModal';
 
 export default function Navbar({ isAuthenticated, user, onLogin, onLogout, isLoginOpen, setIsLoginOpen }) {
-  // Get user name or email to display (e.g. mmmfundaedza.tm or tinotendakatsande)
   const displayName = user?.email || user?.name || user?.username || 'tinotendakatsande';
 
   return (
     <>
       <header className="bg-white border-b border-neutral-200 sticky top-0 z-50">
-        <nav className="max-w-7xl mx-auto px-6 md:px-8 py-4 flex items-center justify-between">
+        <nav className="w-full px-8 py-5 flex items-center justify-between">
           
-          {/* Brand Logo */}
-          <Link to="/" className="text-2xl font-black italic tracking-tighter text-black flex items-center">
-            KayseTrans<span className="not-italic font-extrabold ml-1">Auto</span>
-          </Link>
-
-          {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-8 text-sm font-bold text-black">
-            <Link to="/cars" className="hover:opacity-70 transition-opacity">
-              Cars for Sale
-            </Link>
-            <Link to="/about" className="hover:opacity-70 transition-opacity">
-              About Us
-            </Link>
-            <Link to="/news" className="hover:opacity-70 transition-opacity">
-              News & Videos
-            </Link>
-            <Link to="/sell" className="hover:opacity-70 transition-opacity">
-              Sell Your Car
+          {/* Left Section: Brand Logo + Nav Links together */}
+          <div className="flex items-center gap-12">
+            <Link to="/" className="text-2xl font-black italic tracking-tight text-black flex items-center gap-1.5">
+              <span>Kaysetrans</span>
+              <span className="not-italic font-extrabold">Auto</span>
             </Link>
 
-            {/* Authenticated Admin Link */}
-            {isAuthenticated && (
-              <Link to="/admin/inventory" className="font-black text-black hover:opacity-70 transition-opacity">
-                Manage Inventory
+            {/* Navigation Links (Left Aligned Next to Logo) */}
+            <div className="hidden md:flex items-center gap-8 text-sm font-bold text-black tracking-tight">
+              <Link to="/cars" className="hover:opacity-70 transition-opacity">
+                Cars for Sale
               </Link>
-            )}
+              <Link to="/about" className="hover:opacity-70 transition-opacity">
+                About Us
+              </Link>
+              <Link to="/news" className="hover:opacity-70 transition-opacity">
+                News & Videos
+              </Link>
+              <Link to="/sell" className="hover:opacity-70 transition-opacity">
+                Sell Your Car
+              </Link>
+
+              {isAuthenticated && (
+                <Link to="/admin/inventory" className="font-black text-black hover:opacity-70 transition-opacity">
+                  Manage Inventory
+                </Link>
+              )}
+            </div>
           </div>
 
-          {/* User Auth Section */}
+          {/* Right Section: User Auth */}
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
               <div className="flex items-center gap-3 text-xs md:text-sm">
@@ -56,12 +57,10 @@ export default function Navbar({ isAuthenticated, user, onLogin, onLogout, isLog
             ) : (
               <button 
                 onClick={() => setIsLoginOpen(true)}
-                className="flex items-center gap-2 text-sm font-extrabold text-black hover:opacity-70 transition-opacity cursor-pointer"
+                className="flex items-center gap-2 text-sm font-bold text-black hover:opacity-70 transition-opacity cursor-pointer"
               >
                 <span>Sign In</span>
-                <div className="w-8 h-8 rounded-full border-2 border-black flex items-center justify-center">
-                  <User className="w-4 h-4 text-black stroke-[2.5]" />
-                </div>
+                <User className="w-5 h-5 text-black stroke-[2]" />
               </button>
             )}
           </div>
