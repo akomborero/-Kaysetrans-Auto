@@ -3,7 +3,6 @@ import {
   LayoutDashboard, Plus, Trash2, UserPlus, 
   ShieldCheck, Car, Database, Loader2, Upload, X 
 } from 'lucide-react';
-import toast from 'react-hot-toast';
 import AddAdminModal from '../AddAdminModal';
 
 export default function ManageInventory() {
@@ -35,12 +34,9 @@ export default function ManageInventory() {
       if (response.ok) {
         const data = await response.json();
         setFleet(data);
-      } else {
-        toast.error('Failed to load inventory');
       }
     } catch (error) {
       console.error('Error fetching cars:', error);
-      toast.error('Network error while connecting to server');
     } finally {
       setIsLoading(false);
     }
@@ -68,24 +64,18 @@ export default function ManageInventory() {
     }));
 
     setSelectedImages((prev) => [...prev, ...newImagePreviews]);
-    toast.success(`Added ${files.length} image(s) to gallery`);
   };
 
   const handleRemoveImage = (idToRemove) => {
     setSelectedImages((prev) => prev.filter((img) => img.id !== idToRemove));
-    toast('Image removed', { icon: '🗑️' });
   };
 
   // Create Car Handler
   const handleCreateListing = async (e) => {
     e.preventDefault();
-    if (!form.make || !form.model || !form.price) {
-      toast.error('Please fill in required fields (Make, Model, Price)');
-      return;
-    }
+    if (!form.make || !form.model || !form.price) return;
 
     setIsSubmitting(true);
-    const toastId = toast.loading('Publishing vehicle listing...');
     const token = localStorage.getItem('adminToken');
 
     try {
@@ -122,8 +112,6 @@ export default function ManageInventory() {
       const createdCar = await response.json();
       setFleet([createdCar, ...fleet]);
 
-      toast.success('Vehicle published successfully!', { id: toastId });
-
       // Reset Form & Gallery
       setForm({
         make: '',
@@ -136,43 +124,17 @@ export default function ManageInventory() {
       });
       setSelectedImages([]);
     } catch (error) {
-      toast.error(error.message || 'Failed to publish listing', { id: toastId });
+      alert(error.message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDeleteCar = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this car?')) return;
+
     const token = localStorage.getItem('adminToken');
 
-    toast((t) => (
-      <div className="flex flex-col gap-2">
-        <span className="text-xs font-bold text-black">
-          Are you sure you want to delete this car?
-        </span>
-        <div className="flex gap-2 justify-end">
-          <button
-            onClick={() => {
-              toast.dismiss(t.id);
-              confirmDelete(id, token);
-            }}
-            className="bg-red-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold"
-          >
-            Delete
-          </button>
-          <button
-            onClick={() => toast.dismiss(t.id)}
-            className="bg-neutral-200 text-black text-xs px-3 py-1.5 rounded-lg font-bold"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    ), { duration: 6000 });
-  };
-
-  const confirmDelete = async (id, token) => {
-    const deleteToast = toast.loading('Deleting vehicle...');
     try {
       const response = await fetch(`https://smart-ar-backend.onrender.com/api/cars/${id}`, {
         method: 'DELETE',
@@ -182,14 +144,13 @@ export default function ManageInventory() {
       });
 
       if (response.ok) {
-        setFleet((prev) => prev.filter((car) => (car.id || car._id) !== id));
-        toast.success('Vehicle deleted successfully', { id: deleteToast });
+        setFleet(fleet.filter((car) => (car.id || car._id) !== id));
       } else {
         const err = await response.json();
-        toast.error(err.message || 'Failed to delete car', { id: deleteToast });
+        alert(err.message || 'Failed to delete car');
       }
     } catch (error) {
-      toast.error('Error deleting car: ' + error.message, { id: deleteToast });
+      alert('Error deleting car: ' + error.message);
     }
   };
 
