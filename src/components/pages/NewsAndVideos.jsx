@@ -123,6 +123,7 @@ export default function NewsAndVideos() {
 
   return (
     <div className="min-h-screen bg-white text-black py-12 px-6 md:px-12 font-sans">
+      <Seo title="News & Updates — Kaysetrans Journal" description="Latest automotive news, reviews, and updates curated for car buyers and enthusiasts in Zimbabwe." url="/news" />
       <div className="max-w-7xl mx-auto space-y-16">
         
         {/* Header Section */}

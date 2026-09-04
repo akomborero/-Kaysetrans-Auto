@@ -39,6 +39,7 @@ export default function SellYourCar() {
 
   return (
     <div className="min-h-screen bg-white text-black py-12 px-6 md:px-12 font-sans">
+      <Seo title="Sell Your Car — Kaysetrans Valuation" description="Get an instant valuation and sell or consign your vehicle with Kaysetrans Auto. Fast offers and safe transactions in Harare." url="/sell" />
       <div className="max-w-7xl mx-auto space-y-16">
         
         {/* Header Banner */}

@@ -174,6 +174,7 @@ export default function CarsForSale() {
 
   return (
     <div className="min-h-screen bg-white text-black py-10 px-6 md:px-12 font-sans">
+      <Seo title="Cars For Sale — Kaysetrans Auto" description="Explore our current inventory of quality pre-owned vehicles. Browse by make, model, price and more." url="/cars" />
       <div className="max-w-7xl mx-auto space-y-12">
         
         {/* Header Breadcrumb Banner */}

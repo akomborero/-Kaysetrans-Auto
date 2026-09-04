@@ -163,6 +163,7 @@ export default function CarDetails() {
 
   return (
     <div className="min-h-screen bg-white text-black py-10 px-6 md:px-12">
+      <Seo title={`${car.make} ${car.model} — Kaysetrans Auto`} description={car.description || `View details and pricing for ${car.make} ${car.model}.`} url={`/cars/${car.id || car._id}`} />
       <div className="max-w-7xl mx-auto space-y-16">
         
         {/* Top Section */}

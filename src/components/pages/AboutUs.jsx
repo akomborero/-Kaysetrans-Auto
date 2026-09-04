@@ -34,6 +34,7 @@ export default function AboutUs() {
 
   return (
     <div className="min-h-screen bg-white text-black font-sans">
+      <Seo title="About — Kaysetrans Auto" description="Learn about Kaysetrans Auto, our mission, values, and commitment to transparent vehicle sales in Zimbabwe." url="/about" />
       
       {/* Hero Section */}
       <section className="relative bg-neutral-900 text-white py-24 md:py-32 px-6 md:px-12 overflow-hidden">
