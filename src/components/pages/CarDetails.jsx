@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Loader2, AlertCircle } from 'lucide-react';
+import { getCachedCars } from '../../utils/carsCache';
 
 export default function CarDetails() {
   const { id } = useParams();
@@ -42,6 +43,19 @@ export default function CarDetails() {
     };
 
     if (id) {
+      // try to resolve from cache first
+      try {
+        const cached = getCachedCars();
+        if (cached) {
+          const found = cached.find((c) => String(c.id) === String(id));
+          if (found) {
+            setCar(found);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (e) {}
+
       fetchCarDetails();
     }
   }, [id]);

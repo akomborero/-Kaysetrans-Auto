@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
+import { getCachedCars, setCachedCars } from '../utils/carsCache';
 
 export default function FeaturedStock({ isAdmin = false }) {
   const [cars, setCars] = useState([]);
@@ -8,6 +9,20 @@ export default function FeaturedStock({ isAdmin = false }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const cached = getCachedCars();
+    if (cached) {
+      const mapped = cached.map((car) => ({
+        id: car.id,
+        title: `${car.make || ''} ${car.model || ''}`.trim() || 'UNTITLED CAR',
+        price: car.price ? `$${Number(car.price).toLocaleString()}` : '$0',
+        year: car.year && car.year !== 0 && car.year !== '0' ? car.year : 'N/A',
+        image: car.image || '',
+      }));
+      setCars(mapped);
+      setLoading(false);
+      return;
+    }
+
     fetch('https://smart-ar-backend.onrender.com/api/cars')
       .then((res) => {
         if (!res.ok) {
@@ -17,23 +32,30 @@ export default function FeaturedStock({ isAdmin = false }) {
       })
       .then((data) => {
         if (Array.isArray(data)) {
-          const formattedCars = data.map((car) => {
-            const primaryImg =
-              car.image ||
-              car.imageUrl ||
-              car.images?.[0] ||
-              car.car_images?.find((img) => img.is_primary)?.image_url ||
-              car.car_images?.[0]?.image_url ||
-              '';
+          // Normalize and cache the raw car objects similarly to other pages
+          const normalized = data.map((car) => ({
+            id: car.id || car._id,
+            make: car.make || car.title?.split(' ')[0] || 'UNKNOWN',
+            model: car.model || car.title?.split(' ').slice(1).join(' ') || 'MODEL',
+            price: Number(car.price) || 0,
+            year: car.year && car.year !== 0 && car.year !== '0' ? String(car.year) : 'N/A',
+            mileage: car.mileage || 'N/A',
+            transmission: car.transmission || 'Automatic',
+            fuel: car.fuel || 'Petrol',
+            image:
+              car.image || car.imageUrl || car.images?.[0] || car.car_images?.find((img) => img.is_primary)?.image_url || car.car_images?.[0]?.image_url || '',
+          }));
 
-            return {
-              id: car.id || car._id,
-              title: `${car.make || ''} ${car.model || ''}`.trim() || 'UNTITLED CAR',
-              price: car.price ? `$${Number(car.price).toLocaleString()}` : '$0',
-              year: car.year && car.year !== 0 && car.year !== '0' ? car.year : 'N/A',
-              image: primaryImg,
-            };
-          });
+          try { setCachedCars(normalized); } catch(e){}
+
+          const formattedCars = normalized.map((car) => ({
+            id: car.id,
+            title: `${car.make || ''} ${car.model || ''}`.trim() || 'UNTITLED CAR',
+            price: car.price ? `$${Number(car.price).toLocaleString()}` : '$0',
+            year: car.year && car.year !== 0 && car.year !== '0' ? car.year : 'N/A',
+            image: car.image || '',
+          }));
+
           setCars(formattedCars);
         } else {
           setCars([]);

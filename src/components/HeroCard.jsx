@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getCachedCars, setCachedCars } from '../utils/carsCache';
 
 export default function HeroCard() {
   const [cars, setCars] = useState([]);
@@ -15,11 +16,34 @@ export default function HeroCard() {
 
   // Fetch cars from API
   useEffect(() => {
+    const cached = getCachedCars();
+    if (cached) {
+      setCars(cached);
+      setLoading(false);
+      return;
+    }
+
     fetch('https://smart-ar-backend.onrender.com/api/cars')
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
-          setCars(data);
+          // normalize similar to other pages
+          const normalized = data.map((car) => ({
+            id: car.id || car._id,
+            make: car.make || car.title?.split(' ')[0] || 'UNKNOWN',
+            model: car.model || car.title?.split(' ').slice(1).join(' ') || 'MODEL',
+            price: Number(car.price) || 0,
+            year: car.year && car.year !== 0 && car.year !== '0' ? String(car.year) : 'N/A',
+            mileage: car.mileage || 'N/A',
+            transmission: car.transmission || 'Automatic',
+            fuel: car.fuel || 'Petrol',
+            image:
+              car.image || car.imageUrl || car.images?.[0] || car.car_images?.find((img) => img.is_primary)?.image_url || car.car_images?.[0]?.image_url || '',
+            description: car.description || '',
+          }));
+
+          setCars(normalized);
+          try { setCachedCars(normalized); } catch(e){}
         }
       })
       .catch((err) => console.error('Error fetching cars:', err))
@@ -183,7 +207,7 @@ export default function HeroCard() {
   return (
     <div className="relative w-full min-h-[85vh] bg-black flex items-center justify-start p-8 md:p-16 overflow-hidden">
       {/* Background overlay image effect for fallback view */}
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1617814076367-b759c7d7e738?q=80&w=2000')] bg-cover bg-center opacity-30 pointer-events-none" />
+      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=600')] bg-cover bg-center opacity-30 pointer-events-none" />
       <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent pointer-events-none" />
 
       <div className="relative z-10 w-full max-w-sm p-8 rounded-3xl bg-black/40 backdrop-blur-md border border-white/20 shadow-[0_0_50px_rgba(255,255,255,0.15)] flex flex-col justify-between text-white">

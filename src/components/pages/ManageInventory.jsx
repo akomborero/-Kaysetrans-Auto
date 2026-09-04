@@ -4,6 +4,7 @@ import {
   ShieldCheck, Car, Database, Loader2, Upload, X 
 } from 'lucide-react';
 import AddAdminModal from '../AddAdminModal';
+import { clearCachedCars } from '../../utils/carsCache';
 
 export default function ManageInventory() {
   const [fleet, setFleet] = useState([]);
@@ -111,6 +112,7 @@ export default function ManageInventory() {
 
       const createdCar = await response.json();
       setFleet([createdCar, ...fleet]);
+      try { clearCachedCars(); } catch(e){}
 
       // Reset Form & Gallery
       setForm({
@@ -145,6 +147,7 @@ export default function ManageInventory() {
 
       if (response.ok) {
         setFleet(fleet.filter((car) => (car.id || car._id) !== id));
+        try { clearCachedCars(); } catch(e){}
       } else {
         const err = await response.json();
         alert(err.message || 'Failed to delete car');

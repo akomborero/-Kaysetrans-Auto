@@ -96,12 +96,29 @@ const FEATURED_CARS = [
 export default function CarsForSale() {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
+  const CACHE_KEY = 'kaysetrans_cars_cache';
+  const CACHE_TTL = 1000 * 60 * 60; // 1 hour
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMake, setSelectedMake] = useState('All');
   const [maxPrice, setMaxPrice] = useState('50000');
 
   useEffect(() => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed?.timestamp && Date.now() - parsed.timestamp < CACHE_TTL && Array.isArray(parsed.cars)) {
+          setCars(parsed.cars);
+          setLoading(false);
+          return; // use cache, skip fetch
+        }
+      }
+    } catch (e) {
+      // ignore JSON parse errors and continue to fetch
+      console.warn('Error reading cars cache:', e);
+    }
+
     fetch('https://smart-ar-backend.onrender.com/api/cars')
       .then((res) => res.json())
       .then((data) => {
@@ -128,6 +145,11 @@ export default function CarsForSale() {
             };
           });
           setCars(formattedCars);
+          try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), cars: formattedCars }));
+          } catch (e) {
+            console.warn('Error saving cars cache:', e);
+          }
         } else {
           setCars(FEATURED_CARS);
         }
@@ -172,7 +194,10 @@ export default function CarsForSale() {
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-black uppercase tracking-wider text-black">FILTER</h2>
               <button 
-                onClick={() => { setSearchQuery(''); setSelectedMake('All'); setMaxPrice('50000'); }}
+                onClick={() => { 
+                  setSearchQuery(''); setSelectedMake('All'); setMaxPrice('50000'); 
+                  try { localStorage.removeItem(CACHE_KEY); } catch(e){}
+                }}
                 className="text-[10px] font-bold text-purple-700 hover:underline cursor-pointer"
               >
                 Reset All
