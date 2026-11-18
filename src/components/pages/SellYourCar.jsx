@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { DollarSign, ShieldCheck, Zap, CheckCircle2, ArrowRight } from 'lucide-react';
 import Seo from '../Seo';
+import { breadcrumbSchema } from '../../utils/seoData';
+import Breadcrumbs from '../Breadcrumbs';
 
 export default function SellYourCar() {
   const [formData, setFormData] = useState({
@@ -40,11 +42,19 @@ export default function SellYourCar() {
 
   return (
     <div className="min-h-screen bg-white text-black py-12 px-6 md:px-12 font-sans">
-      <Seo title="Sell Your Car" description="Enquire about selling or consigning your vehicle with Kaysetrans Auto in Harare." url="/sell" />
+      <Seo
+        title="Sell Your Car"
+        description="Enquire about selling or consigning your vehicle with Kaysetrans Auto in Harare."
+        url="/sell"
+        schema={breadcrumbSchema([{ name: 'Home', url: '/' }, { name: 'Sell Your Car', url: '/sell' }])}
+      />
       <div className="max-w-7xl mx-auto space-y-16">
         
         {/* Header Banner */}
         <div className="space-y-4 border-b border-neutral-100 pb-8 text-center max-w-3xl mx-auto">
+          <div className="flex justify-center">
+            <Breadcrumbs items={[{ name: 'Home', url: '/' }, { name: 'Sell Your Car', url: '/sell' }]} />
+          </div>
           <span className="text-xs font-black uppercase tracking-widest text-neutral-400">
             KAYSETRANS VALUATION & CONSIGNMENT
           </span>

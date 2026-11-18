@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import { ShieldCheck, Award, Zap, Users, ArrowRight } from 'lucide-react';
 import Seo from '../Seo';
 import { organizationSchema } from '../../utils/organizationSchema';
+import { websiteSchema, breadcrumbSchema } from '../../utils/seoData';
+import Breadcrumbs from '../Breadcrumbs';
 
 export default function AboutUs() {
   const highlights = [
@@ -36,13 +38,22 @@ export default function AboutUs() {
 
   return (
     <div className="min-h-screen bg-white text-black font-sans">
-      <Seo title="About — Kaysetrans Auto" description="Learn about Kaysetrans Auto, our mission, values, and commitment to transparent vehicle sales in Zimbabwe." url="/about" schema={organizationSchema} />
+      <Seo
+        title="About — Kaysetrans Auto"
+        description="Learn about Kaysetrans Auto, our mission, values, and commitment to transparent vehicle sales in Zimbabwe."
+        url="/about"
+        schema={[organizationSchema, websiteSchema, breadcrumbSchema([
+          { name: 'Home', url: '/' },
+          { name: 'About Us', url: '/about' },
+        ])]}
+      />
       
       {/* Hero Section */}
       <section className="relative bg-neutral-900 text-white py-24 md:py-32 px-6 md:px-12 overflow-hidden">
         <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
         
         <div className="max-w-7xl mx-auto relative z-10 space-y-8">
+          <Breadcrumbs dark items={[{ name: 'Home', url: '/' }, { name: 'About Us', url: '/about' }]} />
           <div className="inline-flex items-center gap-2 bg-neutral-800 border border-neutral-700 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest text-neutral-300">
             <span>ABOUT KAYSETRANS AUTO</span>
           </div>

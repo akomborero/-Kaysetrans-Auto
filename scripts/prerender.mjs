@@ -38,6 +38,12 @@ function validId(id) {
   return Number.isInteger(numeric) && numeric > 0;
 }
 
+// Only listings explicitly marked available are advertised or prerendered.
+// Reserved and sold vehicles must not appear in inventory or the sitemap.
+function isActiveVehicle(car) {
+  return !!car && String(car.status || '').trim().toLowerCase() === 'available';
+}
+
 function lastmodFrom(timestamp) {
   if (!timestamp) return null;
   const date = new Date(timestamp);
@@ -54,7 +60,7 @@ async function fetchVehicles() {
     const data = await response.json();
     if (!Array.isArray(data)) throw new Error('API did not return an array');
 
-    return data.filter((car) => validId(car.id));
+    return data.filter((car) => validId(car.id) && isActiveVehicle(car));
   } catch (error) {
     console.warn(`[prerender] Inventory unavailable (${error.message}); building without vehicle pages.`);
     return [];
@@ -128,16 +134,34 @@ async function writeRoute(template, renderRoute, route, data, measurement) {
   return target;
 }
 
+// The admin route is private. Serve a minimal SPA shell with an explicit
+// noindex directive so it is never treated as a duplicate of the homepage.
+async function writeAdminShell(template) {
+  const document = template
+    .replace(/<title>[\s\S]*?<\/title>/i, '')
+    .replace(/<meta\s+name="description"\s+content="[^"]*"\s*\/?>/i, '')
+    .replace('</head>', '  <meta name="robots" content="noindex, nofollow" />\n  </head>');
+
+  const target = path.join(distDir, 'admin', 'inventory', 'index.html');
+  await fs.mkdir(path.dirname(target), { recursive: true });
+  await fs.writeFile(target, document, 'utf8');
+  return target;
+}
+
 async function main() {
   await fs.access(distDir);
   await fs.access(ssrEntry);
+
+  // Remove previously generated vehicle pages first. Without this, a vehicle
+  // that is sold or deleted would still be served at its old URL after deploy.
+  await fs.rm(path.join(distDir, 'cars'), { recursive: true, force: true });
 
   const template = await fs.readFile(path.join(distDir, 'index.html'), 'utf8');
   const { renderRoute } = await import(pathToFileURL(ssrEntry).href);
   const vehicles = await fetchVehicles();
   const measurement = measurementTags();
 
-  console.log(`[prerender] ${vehicles.length} genuine vehicle(s) from ${API_BASE_URL}/api/cars`);
+  console.log(`[prerender] ${vehicles.length} active vehicle(s) from ${API_BASE_URL}/api/cars`);
 
   for (const route of STATIC_ROUTES) {
     const data = route === '/' || route === '/cars' ? { cars: vehicles } : {};
@@ -150,6 +174,9 @@ async function main() {
     const target = await writeRoute(template, renderRoute, route, { car }, measurement);
     console.log(`[prerender] ${route} -> ${path.relative(root, target)}`);
   }
+
+  const adminTarget = await writeAdminShell(template);
+  console.log(`[prerender] /admin/inventory -> ${path.relative(root, adminTarget)} (noindex)`);
 
   const sitemap = buildSitemap(vehicles);
   await fs.writeFile(path.join(distDir, 'sitemap.xml'), sitemap, 'utf8');

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Clock, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import Seo from '../Seo';
+import { breadcrumbSchema } from '../../utils/seoData';
+import Breadcrumbs from '../Breadcrumbs';
 
 export default function NewsAndVideos() {
   const [activeTab, setActiveTab] = useState('ALL');
@@ -101,12 +103,18 @@ export default function NewsAndVideos() {
 
   return (
     <div className="min-h-screen bg-white text-black py-12 px-6 md:px-12 font-sans">
-      <Seo title="News & Updates" description="Latest automotive news, reviews, and updates curated for car buyers and enthusiasts in Zimbabwe." url="/news" />
+      <Seo
+        title="News & Updates"
+        description="Latest automotive news, reviews, and updates curated for car buyers and enthusiasts in Zimbabwe."
+        url="/news"
+        schema={breadcrumbSchema([{ name: 'Home', url: '/' }, { name: 'News & Updates', url: '/news' }])}
+      />
       <div className="max-w-7xl mx-auto space-y-16">
         
         {/* Header Section */}
         <div className="space-y-4 border-b border-neutral-100 pb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2">
+            <Breadcrumbs items={[{ name: 'Home', url: '/' }, { name: 'News & Updates', url: '/news' }]} />
             <span className="text-xs font-black uppercase tracking-widest text-neutral-400">
               KAYSETRANS JOURNAL & MEDIA HUB
             </span>

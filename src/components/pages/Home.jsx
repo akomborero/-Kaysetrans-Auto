@@ -6,6 +6,7 @@ import NewsSection from '../NewsSection';
 import FAQSection from '../FAQSection';
 import Seo from '../Seo';
 import { organizationSchema } from '../../utils/organizationSchema';
+import { websiteSchema } from '../../utils/seoData';
 
 export default function Home() {
   return (
@@ -14,7 +15,7 @@ export default function Home() {
         title="Kaysetrans Auto — Premium Pre-Owned Cars"
         description="Browse hand-picked vehicles, transparent pricing, and trusted service in Harare, Zimbabwe."
         url="/"
-        schema={organizationSchema}
+        schema={[organizationSchema, websiteSchema]}
       />
       {/* Hero Section */}
       <HeroCard />

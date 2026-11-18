@@ -3,7 +3,17 @@ import { useParams } from 'react-router-dom';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { getCachedCars } from '../../utils/carsCache';
 import { getPrerenderData } from '../../utils/prerenderData';
+import {
+  vehicleTitle,
+  vehicleDescription,
+  vehicleSubject,
+  vehicleImageAlt,
+  primaryVehicleImage,
+  vehicleSchema,
+  breadcrumbSchema,
+} from '../../utils/seoData';
 import Seo from '../Seo';
+import Breadcrumbs from '../Breadcrumbs';
 
 export default function CarDetails() {
   const { id } = useParams();
@@ -189,7 +199,20 @@ export default function CarDetails() {
 
   return (
     <div className="min-h-screen bg-white text-black py-10 px-6 md:px-12">
-      <Seo title={`${car.make} ${car.model} — Kaysetrans Auto`} description={car.description || `View details and pricing for ${car.make} ${car.model}.`} url={`/cars/${car.id || car._id}`} />
+      <Seo
+        title={vehicleTitle(car)}
+        description={vehicleDescription(car)}
+        image={primaryVehicleImage(car)}
+        url={`/cars/${car.id || car._id}`}
+        schema={[
+          breadcrumbSchema([
+            { name: 'Home', url: '/' },
+            { name: 'Cars for Sale', url: '/cars' },
+            { name: vehicleSubject(car) || 'Vehicle Details', url: `/cars/${car.id || car._id}` },
+          ]),
+          vehicleSchema(car),
+        ].filter(Boolean)}
+      />
       <div className="max-w-7xl mx-auto space-y-16">
         
         {/* Top Section */}
@@ -199,8 +222,8 @@ export default function CarDetails() {
           <div className="lg:col-span-6 space-y-4">
             <div className="aspect-4/3 rounded-3xl overflow-hidden bg-neutral-100 border border-neutral-200">
               <img 
-                src={activeImage} 
-                alt={`${car.make} ${car.model}`} 
+                src={activeImage}
+                alt={vehicleImageAlt(car)}
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   e.target.onerror = null;
@@ -219,7 +242,7 @@ export default function CarDetails() {
                       activeImage === imgUrl ? 'border-black scale-95' : 'border-transparent opacity-70 hover:opacity-100'
                     }`}
                   >
-                    <img src={imgUrl} alt={`thumbnail ${idx}`} className="w-full h-full object-cover" />
+                    <img src={imgUrl} alt={vehicleImageAlt(car, idx)} className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
@@ -229,6 +252,11 @@ export default function CarDetails() {
           {/* Details */}
           <div className="lg:col-span-6 flex flex-col justify-between space-y-6">
             <div className="space-y-6">
+              <Breadcrumbs items={[
+                { name: 'Home', url: '/' },
+                { name: 'Cars for Sale', url: '/cars' },
+                { name: vehicleSubject(car) || 'Vehicle Details', url: `/cars/${car.id || car._id}` },
+              ]} />
               <span className="text-xs font-black uppercase tracking-widest text-neutral-400">
                 {car.year || 'N/A'} MODEL
               </span>

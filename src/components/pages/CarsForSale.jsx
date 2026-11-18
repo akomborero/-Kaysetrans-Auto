@@ -4,6 +4,8 @@ import { Loader2 } from 'lucide-react';
 import Seo from '../Seo';
 import { getCachedCars, setCachedCars, clearCachedCars } from '../../utils/carsCache';
 import { getPrerenderData } from '../../utils/prerenderData';
+import { breadcrumbSchema } from '../../utils/seoData';
+import Breadcrumbs from '../Breadcrumbs';
 
 function normalizeCars(data) {
   return data.map((car) => {
@@ -92,17 +94,23 @@ export default function CarsForSale() {
 
   return (
     <div className="min-h-screen bg-white text-black py-10 px-6 md:px-12 font-sans">
-      <Seo title="Cars For Sale — Kaysetrans Auto" description="Explore our current inventory of quality pre-owned vehicles. Browse by make, model, price and more." url="/cars" />
+      <Seo
+        title="Cars For Sale — Kaysetrans Auto"
+        description="Browse vehicles currently listed by Kaysetrans Auto in Harare, Zimbabwe. Contact our team to confirm availability, specifications and next steps."
+        url="/cars"
+        schema={breadcrumbSchema([{ name: 'Home', url: '/' }, { name: 'Cars for Sale', url: '/cars' }])}
+      />
       <div className="max-w-7xl mx-auto space-y-12">
         
         {/* Header Breadcrumb Banner */}
-        <div className="space-y-2 border-b border-neutral-100 pb-6">
-          <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">
-            KAYSETRANS AUTO / INVENTORY
-          </span>
+        <div className="space-y-3 border-b border-neutral-100 pb-6">
+          <Breadcrumbs items={[{ name: 'Home', url: '/' }, { name: 'Cars for Sale', url: '/cars' }]} />
           <h1 className="text-4xl md:text-5xl font-black italic uppercase tracking-tight">
             CARS FOR SALE
           </h1>
+          <p className="max-w-2xl text-xs font-medium leading-relaxed text-neutral-500 md:text-sm">
+            Browse the vehicles currently listed by Kaysetrans Auto in Harare, Zimbabwe. Contact our team to confirm availability and arrange a viewing.
+          </p>
         </div>
 
         {/* Main Grid: Sidebar Filters & Car Listing */}
@@ -242,7 +250,7 @@ export default function CarsForSale() {
                         {car.image ? (
                           <img
                             src={car.image}
-                            alt={`${car.make} ${car.model}`}
+                            alt={`${car.year !== 'N/A' ? `${car.year} ` : ''}${car.make} ${car.model} at Kaysetrans Auto`}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         ) : (

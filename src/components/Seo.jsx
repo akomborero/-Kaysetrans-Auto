@@ -32,6 +32,18 @@ export default function Seo({ title, description, image, url, type = 'website', 
   const safeImage = image || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=1200';
   const absoluteUrl = toAbsoluteUrl(url);
 
+  // Multiple schemas are emitted as a single valid @graph document.
+  const structuredData = Array.isArray(schema)
+    ? {
+        '@context': 'https://schema.org',
+        '@graph': schema.map((item) => {
+          const copy = { ...item };
+          delete copy['@context'];
+          return copy;
+        }),
+      }
+    : schema;
+
   return (
     <Helmet>
       {/* Primary HTML Meta Tags */}
@@ -57,9 +69,9 @@ export default function Seo({ title, description, image, url, type = 'website', 
       {absoluteUrl && <link rel="canonical" href={absoluteUrl} />}
 
       {/* Structured Data / Schema.org */}
-      {schema && (
+      {structuredData && (
         <script type="application/ld+json">
-          {JSON.stringify(schema)}
+          {JSON.stringify(structuredData)}
         </script>
       )}
     </Helmet>
