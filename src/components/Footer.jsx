@@ -78,6 +78,12 @@ export default function Footer() {
           <span>© 2026 KAYSETRANS AUTO. ALL RIGHTS RESERVED.</span>
         </div>
 
+        {/* Developer credit */}
+        <div className="pt-3 text-[11px] font-medium tracking-wide text-neutral-500">
+          Designed &amp; Developed by{' '}
+          <span className="font-semibold text-neutral-300">Makomborero Chidziva</span>
+        </div>
+
       </div>
     </footer>
   );
