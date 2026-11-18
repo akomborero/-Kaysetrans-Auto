@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { getCachedCars } from '../../utils/carsCache';
+import Seo from '../Seo';
 
 export default function CarDetails() {
   const { id } = useParams();
@@ -19,45 +20,63 @@ export default function CarDetails() {
   });
 
   useEffect(() => {
-    const fetchCarDetails = async () => {
+    let isActive = true;
+
+    const fetchCarDetails = async (hasCached) => {
       try {
-        setLoading(true);
         setError(null);
-        
         const response = await fetch(`https://smart-ar-backend.onrender.com/api/cars/${id}`);
-        
+
         if (!response.ok) {
           throw new Error('Vehicle details could not be loaded.');
         }
 
         const data = await response.json();
-        console.log('RAW BACKEND CAR RESPONSE:', data);
-        setCar(data);
+        if (isActive) setCar(data);
 
       } catch (err) {
         console.error('Error fetching car details:', err);
-        setError(err.message || 'Failed to load car details.');
+        // A cache hit can safely keep rendering the cached car if the live
+        // request fails; without a cached car, surface the error.
+        if (isActive && !hasCached) {
+          setError(err.message || 'Failed to load car details.');
+        }
       } finally {
-        setLoading(false);
+        if (isActive) setLoading(false);
       }
     };
 
     if (id) {
-      // try to resolve from cache first
-      try {
-        const cached = getCachedCars();
-        if (cached) {
-          const found = cached.find((c) => String(c.id) === String(id));
-          if (found) {
-            setCar(found);
-            setLoading(false);
-            return;
+      // The shared cache stores a single normalized "image" per car and drops
+      // car_images, so it can only be used as an instant placeholder. Always
+      // fetch the live record as well, otherwise the gallery shows only one
+      // photo even though the API returns all of them.
+      // Deferred to a microtask so the placeholder render is not a synchronous
+      // setState inside the effect body.
+      Promise.resolve().then(() => {
+        let hasCached = false;
+        try {
+          const cached = getCachedCars();
+          if (cached) {
+            const found = cached.find((c) => String(c.id) === String(id));
+            if (found) {
+              hasCached = true;
+              setCar(found);
+              setLoading(false);
+            }
           }
+        } catch {
+          // An unreadable cache is harmless; the live fetch below still runs.
         }
-      } catch (e) {}
 
-      fetchCarDetails();
+        if (!hasCached) setLoading(true);
+        return hasCached;
+      }).then((hasCached) => {
+        if (isActive) fetchCarDetails(hasCached);
+      });
     }
+
+    return () => { isActive = false; };
   }, [id]);
 
   // Updated Helper: Safely parses car_images, handles Base64 formatting, and appends prefixes
@@ -115,7 +134,10 @@ export default function CarDetails() {
   };
 
   const galleryImages = extractImageUrls(car);
-  const activeImage = selectedImage || galleryImages[0] || 'https://placehold.co/800x600/e2e8f0/1e293b?text=No+Image+Available';
+  // Ignore a selection left over from a previously viewed car.
+  const activeImage = selectedImage && galleryImages.includes(selectedImage)
+    ? selectedImage
+    : galleryImages[0] || 'https://placehold.co/800x600/e2e8f0/1e293b?text=No+Image+Available';
 
   const handleReviewSubmit = (e) => {
     e.preventDefault();
@@ -256,7 +278,10 @@ export default function CarDetails() {
         {/* Reviews */}
         <div className="pt-12 border-t border-neutral-200 grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           <div className="lg:col-span-5 bg-neutral-50/80 rounded-3xl p-8 border border-neutral-100 space-y-6">
-            <h2 className="text-2xl font-black italic uppercase tracking-tight">LEAVE A REVIEW</h2>
+            <h2 className="text-2xl font-black italic uppercase tracking-tight">ADD A PRIVATE NOTE</h2>
+            <p className="text-[11px] leading-relaxed text-neutral-500 font-medium">
+              Notes are saved only in this browser for your own reference. They are not published and are not sent to Kaysetrans Auto.
+            </p>
             <form onSubmit={handleReviewSubmit} className="space-y-4">
               <div className="space-y-1">
                 <label className="text-[10px] font-black uppercase tracking-wider text-neutral-500">FULL NAME</label>
@@ -306,16 +331,16 @@ export default function CarDetails() {
                 type="submit"
                 className="w-full py-4 bg-black text-white text-xs font-black uppercase tracking-wider rounded-2xl hover:bg-neutral-800 transition-colors cursor-pointer"
               >
-                SUBMIT REVIEW
+                SAVE NOTE LOCALLY
               </button>
             </form>
           </div>
 
           <div className="lg:col-span-7 space-y-6">
-            <h2 className="text-2xl font-black italic uppercase tracking-tight">CUSTOMER FEEDBACK</h2>
+            <h2 className="text-2xl font-black italic uppercase tracking-tight">YOUR NOTES</h2>
             {reviews.length === 0 ? (
               <div className="border border-dashed border-neutral-200 rounded-3xl p-12 text-center text-xs font-semibold text-neutral-400">
-                No reviews yet. Be the first to review this car!
+                No notes yet. Add a private note for your own reference.
               </div>
             ) : (
               <div className="space-y-4">

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { getCachedCars, setCachedCars } from '../utils/carsCache';
 
-export default function FeaturedStock({ isAdmin = false }) {
+export default function FeaturedStock() {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -69,6 +69,8 @@ export default function FeaturedStock({ isAdmin = false }) {
       .finally(() => setLoading(false));
   }, []);
 
+  const whatsappHref = `https://wa.me/263784532889?text=${encodeURIComponent('Hello, I would like to enquire about the vehicles currently available.')}`;
+
   return (
     <section className="bg-white text-black py-12 px-6 md:px-8">
       <div className="max-w-7xl mx-auto">
@@ -80,11 +82,6 @@ export default function FeaturedStock({ isAdmin = false }) {
           </h2>
 
           <div className="flex items-center gap-3">
-            {isAdmin && (
-              <button className="bg-black text-white font-extrabold text-xs uppercase tracking-wider py-3.5 px-6 rounded-full hover:bg-neutral-800 transition-colors cursor-pointer">
-                + ADD A CAR
-              </button>
-            )}
             <Link 
               to="/cars" 
               className="bg-white text-black border-2 border-black font-extrabold text-xs uppercase tracking-wider py-3.5 px-6 rounded-full hover:bg-black hover:text-white transition-colors cursor-pointer text-center"
@@ -102,13 +99,39 @@ export default function FeaturedStock({ isAdmin = false }) {
           </div>
         ) : error ? (
           /* Error State */
-          <div className="w-full border-2 border-dashed border-red-200 bg-red-50/50 rounded-3xl py-12 text-center text-red-600 font-bold text-sm uppercase tracking-wider">
-            {error}
+          <div className="w-full border-2 border-dashed border-neutral-200 rounded-3xl py-12 text-center space-y-4">
+            <p className="text-neutral-600 font-bold text-sm uppercase tracking-wider">
+              {error}
+            </p>
+            <p className="text-xs text-neutral-400 font-medium">
+              You can contact our team directly to ask about available vehicles.
+            </p>
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-black text-white font-black text-xs uppercase tracking-wider px-8 py-3.5 rounded-full hover:bg-neutral-800 transition-colors"
+            >
+              CHAT ON WHATSAPP
+            </a>
           </div>
         ) : cars.length === 0 ? (
-          /* Empty Database State */
-          <div className="w-full border-2 border-dashed border-gray-300 rounded-3xl py-16 text-center text-gray-500 font-bold text-sm uppercase tracking-wider">
-            No cars found in live database.
+          /* Empty Inventory State */
+          <div className="w-full border-2 border-dashed border-neutral-200 rounded-3xl py-16 text-center space-y-4">
+            <p className="text-neutral-600 font-bold text-sm uppercase tracking-wider">
+              No vehicles are currently available.
+            </p>
+            <p className="text-xs text-neutral-400 font-medium">
+              Please contact our team to ask about upcoming stock or a specific vehicle.
+            </p>
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-black text-white font-black text-xs uppercase tracking-wider px-8 py-3.5 rounded-full hover:bg-neutral-800 transition-colors"
+            >
+              CHAT ON WHATSAPP
+            </a>
           </div>
         ) : (
           /* Live API Cars Grid */

@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 export default function WhyChooseUs() {
   return (
     <section className="bg-white py-12 px-6">
@@ -12,27 +14,27 @@ export default function WhyChooseUs() {
           <ul className="space-y-3 text-base md:text-lg font-bold">
             <li className="flex items-center gap-3">
               <span className="w-2 h-2 rounded-full bg-white inline-block"></span>
-              150-Point Certified Inspections
+              Hand-picked pre-owned and new vehicles
             </li>
             <li className="flex items-center gap-3">
               <span className="w-2 h-2 rounded-full bg-white inline-block"></span>
-              7-Day Money Back Guarantee
+              Clearly listed prices and direct enquiries
             </li>
             <li className="flex items-center gap-3">
               <span className="w-2 h-2 rounded-full bg-white inline-block"></span>
-              Direct Home Delivery
+              Serving buyers across Zimbabwe
             </li>
           </ul>
         </div>
 
         {/* Right Side: High-Contrast Pill CTA Button */}
         <div>
-          <a
-            href="#inventory"
+          <Link
+            to="/cars"
             className="inline-block bg-white text-black font-extrabold uppercase tracking-wider text-xs md:text-sm py-4 px-8 rounded-full hover:bg-neutral-200 transition-colors"
           >
             BROWSE INVENTORY
-          </a>
+          </Link>
         </div>
 
       </div>

@@ -1,127 +1,34 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-
-const FEATURED_CARS = [
-  {
-    id: 1,
-    make: 'MAZDA',
-    model: 'CX5',
-    price: 9500,
-    year: '2016',
-    mileage: '65,000 km',
-    transmission: 'Automatic',
-    fuel: 'Petrol',
-    image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=600'
-  },
-  {
-    id: 2,
-    make: 'TOYOTA',
-    model: 'AXIO',
-    price: 7500,
-    year: '2011',
-    mileage: '80,000 km',
-    transmission: 'Automatic',
-    fuel: 'Petrol',
-    image: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&q=80&w=600'
-  },
-  {
-    id: 3,
-    make: 'HONDA',
-    model: 'FIT 10TH',
-    price: 4500,
-    year: '2012',
-    mileage: '95,000 km',
-    transmission: 'Automatic',
-    fuel: 'Petrol',
-    image: 'https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&q=80&w=600'
-  },
-  {
-    id: 4,
-    make: 'TOYOTA',
-    model: 'COROLLA',
-    price: 4900,
-    year: '2004',
-    mileage: '120,000 km',
-    transmission: 'Manual',
-    fuel: 'Petrol',
-    image: 'https://images.unsplash.com/photo-1623869675781-80aa31012a5a?auto=format&fit=crop&q=80&w=600'
-  },
-  {
-    id: 5,
-    make: 'TOYOTA',
-    model: 'ALLION',
-    price: 6800,
-    year: '2006',
-    mileage: '105,000 km',
-    transmission: 'Automatic',
-    fuel: 'Petrol',
-    image: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&q=80&w=600'
-  },
-  {
-    id: 6,
-    make: 'TOYOTA',
-    model: 'VITZ',
-    price: 4500,
-    year: '2010',
-    mileage: '88,000 km',
-    transmission: 'Automatic',
-    fuel: 'Petrol',
-    image: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=600'
-  },
-  {
-    id: 7,
-    make: 'NISSAN',
-    model: 'ADVAN',
-    price: 4500,
-    year: '2013',
-    mileage: '110,000 km',
-    transmission: 'Automatic',
-    fuel: 'Petrol',
-    image: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&q=80&w=600'
-  },
-  {
-    id: 8,
-    make: 'TOYOTA',
-    model: 'RACTIS',
-    price: 3800,
-    year: '2009',
-    mileage: '98,000 km',
-    transmission: 'Automatic',
-    fuel: 'Petrol',
-    image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600'
-  }
-];
+import Seo from '../Seo';
+import { getCachedCars, setCachedCars, clearCachedCars } from '../../utils/carsCache';
 
 export default function CarsForSale() {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
-  const CACHE_KEY = 'kaysetrans_cars_cache';
-  const CACHE_TTL = 1000 * 60 * 60; // 1 hour
+  const [apiError, setApiError] = useState('');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMake, setSelectedMake] = useState('All');
   const [maxPrice, setMaxPrice] = useState('50000');
 
   useEffect(() => {
-    try {
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (parsed?.timestamp && Date.now() - parsed.timestamp < CACHE_TTL && Array.isArray(parsed.cars)) {
-          setCars(parsed.cars);
-          setLoading(false);
-          return; // use cache, skip fetch
-        }
-      }
-    } catch (e) {
-      // ignore JSON parse errors and continue to fetch
-      console.warn('Error reading cars cache:', e);
+    const cached = getCachedCars();
+    if (cached) {
+      setCars(cached);
+      setLoading(false);
+      return; // use cache, skip fetch
     }
 
     fetch('https://smart-ar-backend.onrender.com/api/cars')
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error('Inventory request failed');
+        return res.json();
+      })
       .then((data) => {
+        setApiError('');
+
         if (Array.isArray(data) && data.length > 0) {
           const formattedCars = data.map((car) => {
             const primaryImg =
@@ -130,7 +37,7 @@ export default function CarsForSale() {
               car.images?.[0] ||
               car.car_images?.find((img) => img.is_primary)?.image_url ||
               car.car_images?.[0]?.image_url ||
-              'https://images.unsplash.com/photo-1590362891991-f776e747a588';
+              '';
 
             return {
               id: car.id || car._id,
@@ -145,23 +52,21 @@ export default function CarsForSale() {
             };
           });
           setCars(formattedCars);
-          try {
-            localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), cars: formattedCars }));
-          } catch (e) {
-            console.warn('Error saving cars cache:', e);
-          }
+          setCachedCars(formattedCars);
         } else {
-          setCars(FEATURED_CARS);
+          setCars([]);
         }
       })
       .catch((err) => {
         console.error('Error fetching cars:', err);
-        setCars(FEATURED_CARS);
+        setApiError('We could not load the current inventory. Please try again or contact us directly.');
+        setCars([]);
       })
       .finally(() => setLoading(false));
   }, []);
 
   const availableMakes = ['All', ...new Set(cars.map((car) => car.make))].filter(Boolean);
+  const whatsappHref = `https://wa.me/263784532889?text=${encodeURIComponent('Hello, I would like to enquire about the vehicles currently available.')}`;
 
   const filteredCars = cars.filter((car) => {
     const fullTitle = `${car.make} ${car.model}`.toLowerCase();
@@ -196,8 +101,8 @@ export default function CarsForSale() {
               <h2 className="text-xs font-black uppercase tracking-wider text-black">FILTER</h2>
               <button 
                 onClick={() => { 
-                  setSearchQuery(''); setSelectedMake('All'); setMaxPrice('50000'); 
-                  try { localStorage.removeItem(CACHE_KEY); } catch(e){}
+                  setSearchQuery(''); setSelectedMake('All'); setMaxPrice('50000'); setApiError('');
+                  clearCachedCars();
                 }}
                 className="text-[10px] font-bold text-purple-700 hover:underline cursor-pointer"
               >
@@ -267,10 +172,44 @@ export default function CarsForSale() {
                   Loading Live Showroom Inventory...
                 </p>
               </div>
+            ) : apiError ? (
+              <div className="border border-dashed border-neutral-200 rounded-3xl p-16 text-center space-y-4">
+                <p className="text-sm font-black text-neutral-600 uppercase tracking-wider">
+                  {apiError}
+                </p>
+                <p className="text-xs text-neutral-400 font-medium">
+                  You can contact our team directly to ask about available vehicles.
+                </p>
+                <a
+                  href={whatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block bg-black text-white font-black text-xs uppercase tracking-wider px-8 py-3.5 rounded-full hover:bg-neutral-800 transition-colors"
+                >
+                  CHAT ON WHATSAPP
+                </a>
+              </div>
+            ) : cars.length === 0 ? (
+              <div className="border border-dashed border-neutral-200 rounded-3xl p-16 text-center space-y-4">
+                <p className="text-sm font-black text-neutral-600 uppercase tracking-wider">
+                  No vehicles are currently available.
+                </p>
+                <p className="text-xs text-neutral-400 font-medium">
+                  Please contact our team to ask about upcoming stock or a specific vehicle.
+                </p>
+                <a
+                  href={whatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block bg-black text-white font-black text-xs uppercase tracking-wider px-8 py-3.5 rounded-full hover:bg-neutral-800 transition-colors"
+                >
+                  CHAT ON WHATSAPP
+                </a>
+              </div>
             ) : filteredCars.length === 0 ? (
               <div className="border border-dashed border-neutral-200 rounded-3xl p-16 text-center space-y-3">
                 <p className="text-sm font-black text-neutral-400 uppercase tracking-wider">
-                  Our showroom has no vehicles matching your criteria.
+                  No vehicles match your current filters.
                 </p>
                 <p className="text-xs text-neutral-400 font-medium">
                   Try adjusting your filters or search terms.
@@ -287,11 +226,17 @@ export default function CarsForSale() {
                     <div>
                       {/* Image Preview Container */}
                       <div className="aspect-4/3 relative bg-neutral-100 overflow-hidden">
-                        <img
-                          src={car.image}
-                          alt={`${car.make} ${car.model}`}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
+                        {car.image ? (
+                          <img
+                            src={car.image}
+                            alt={`${car.make} ${car.model}`}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-neutral-400 font-bold text-xs">
+                            NO IMAGE
+                          </div>
+                        )}
                         {car.year && car.year !== 'N/A' && (
                           <span className="absolute top-4 left-4 bg-black/80 backdrop-blur-md text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
                             {car.year}

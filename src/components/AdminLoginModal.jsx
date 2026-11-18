@@ -65,76 +65,83 @@ export default function AdminLoginModal({ isOpen, onClose, onSuccess }) {
     }
   };
 
+  const inputClass = 'w-full rounded-xl border border-neutral-200 bg-white py-2.5 pl-10 pr-4 text-sm text-neutral-900 placeholder-neutral-400 outline-none transition-colors focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10';
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/40 p-4 backdrop-blur-sm">
       <div
-        className="relative w-full max-w-md bg-white border border-neutral-100 rounded-3xl p-8 md:p-10 shadow-2xl transition-all"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="admin-login-title"
+        className="admin-modal-in relative w-full max-w-md overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-[0_24px_60px_-20px_rgba(0,0,0,0.35)]"
         onClick={(e) => e.stopPropagation()}
       >
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-6 right-6 p-2 rounded-full text-neutral-400 hover:text-black hover:bg-neutral-100 transition-colors cursor-pointer"
+          aria-label="Close sign in"
+          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/20"
         >
-          <X className="w-5 h-5" />
+          <X className="h-4 w-4" />
         </button>
 
-        <div className="text-center space-y-2 mb-6">
-          <div className="w-12 h-12 bg-neutral-900 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <Lock className="w-6 h-6" />
+        <div className="border-b border-neutral-200 px-7 pb-6 pt-8">
+          <div className="flex items-center gap-1.5 text-lg font-black italic tracking-tight text-neutral-950">
+            <span>Kaysetrans</span><span className="not-italic font-extrabold">Auto</span>
           </div>
-          <h2 className="text-2xl font-black italic uppercase tracking-tight text-black">
-            ADMIN LOGIN
+          <div className="mt-6 flex h-11 w-11 items-center justify-center rounded-xl bg-neutral-900 text-white">
+            <Lock className="h-5 w-5" />
+          </div>
+          <h2 id="admin-login-title" className="mt-4 text-2xl font-semibold tracking-tight text-neutral-950">
+            Sign in to admin
           </h2>
-          <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-            Kaysetrans Auto Management Portal
-          </p>
+          <p className="mt-1 text-sm text-neutral-500">Access the Kaysetrans Auto management portal.</p>
         </div>
 
         {errorMessage && (
-          <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 flex items-center gap-3 text-red-600 text-xs font-bold">
-            <AlertCircle className="w-5 h-5 shrink-0" />
+          <div className="mx-7 mt-6 flex items-start gap-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3.5 text-sm text-neutral-800">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-neutral-600" />
             <span>{errorMessage}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black uppercase text-neutral-400 tracking-wider">
-              EMAIL ADDRESS
-            </label>
+        <form onSubmit={handleSubmit} className="space-y-5 px-7 py-6">
+          <div className="space-y-2">
+            <label htmlFor="admin-email" className="block text-xs font-medium text-neutral-700">Email address</label>
             <div className="relative flex items-center">
-              <Mail className="absolute left-4 w-4 h-4 text-neutral-400" />
+              <Mail className="pointer-events-none absolute left-3.5 h-4 w-4 text-neutral-400" />
               <input
+                id="admin-email"
                 type="email"
                 required
-                placeholder="admin@kaysetrans.com"
+                placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-neutral-50 border border-neutral-200 rounded-xl pl-11 pr-4 py-3 text-xs font-bold text-black focus:outline-none focus:border-black focus:bg-white transition-all"
+                className={inputClass}
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black uppercase text-neutral-400 tracking-wider">
-              PASSWORD
-            </label>
+          <div className="space-y-2">
+            <label htmlFor="admin-password" className="block text-xs font-medium text-neutral-700">Password</label>
             <div className="relative flex items-center">
-              <Lock className="absolute left-4 w-4 h-4 text-neutral-400" />
+              <Lock className="pointer-events-none absolute left-3.5 h-4 w-4 text-neutral-400" />
               <input
+                id="admin-password"
                 type={showPassword ? 'text' : 'password'}
                 required
                 placeholder="••••••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-neutral-50 border border-neutral-200 rounded-xl pl-11 pr-11 py-3 text-xs font-bold text-black focus:outline-none focus:border-black focus:bg-white transition-all"
+                className={`${inputClass} pr-11`}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 text-neutral-400 hover:text-black cursor-pointer"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute right-3 flex h-7 w-7 items-center justify-center rounded-md text-neutral-400 transition-colors hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/20"
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
@@ -142,22 +149,19 @@ export default function AdminLoginModal({ isOpen, onClose, onSuccess }) {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-black hover:bg-neutral-800 text-white font-black text-xs uppercase tracking-widest py-4 rounded-xl transition-all shadow-xl flex items-center justify-center gap-2 cursor-pointer mt-2 disabled:opacity-50"
+            className="mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-neutral-900 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/30 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isLoading ? (
-              <span>AUTHENTICATING...</span>
+              <span>Signing in…</span>
             ) : (
-              <>
-                <span>SIGN IN</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
+              <><span>Sign in</span><ArrowRight className="h-4 w-4" /></>
             )}
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-neutral-100 flex items-center justify-center gap-2 text-[10px] font-extrabold uppercase tracking-widest text-neutral-400">
-          <ShieldAlert className="w-3.5 h-3.5 text-neutral-400" />
-          <span>AUTHORIZED PERSONNEL ONLY</span>
+        <div className="flex items-center justify-center gap-2 border-t border-neutral-200 bg-neutral-50/60 px-7 py-4 text-[11px] font-medium text-neutral-500">
+          <ShieldAlert className="h-3.5 w-3.5" />
+          Authorized personnel only
         </div>
       </div>
     </div>

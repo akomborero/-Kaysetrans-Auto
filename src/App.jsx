@@ -89,7 +89,7 @@ export default function App() {
             path="/admin/inventory" 
             element={
               isAuthenticated ? (
-                <ManageInventory />
+                <ManageInventory onLogout={handleLogout} />
               ) : (
                 <Navigate to="/" replace />
               )

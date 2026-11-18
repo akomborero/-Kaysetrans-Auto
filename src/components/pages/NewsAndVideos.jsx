@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Clock, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import Seo from '../Seo';
 
 export default function NewsAndVideos() {
   const [activeTab, setActiveTab] = useState('ALL');
@@ -9,10 +10,8 @@ export default function NewsAndVideos() {
 
   useEffect(() => {
     async function fetchLiveNews() {
-      const apiKey = '9df1884cd0a44fb7b29297035a4f643f';
-      const query = encodeURIComponent(
-        '(car OR cars OR automotive OR "electric vehicle" OR EV OR "motor vehicle") AND NOT (crime OR shooting OR court OR murder OR ice)'
-      );
+      // NewsAPI credentials must never ship in the client bundle.
+      // This feed is keyless; see NEWS_FEED_SETUP.md for the server-side option.
 
       // Helper function to map raw articles into your component's state format
       const formatArticles = (articles) => {
@@ -55,62 +54,41 @@ export default function NewsAndVideos() {
         setLoading(true);
         setError(null);
 
-        // Try primary NewsAPI fetch
-        const res = await fetch(
-          `https://newsapi.org/v2/everything?q=${query}&language=en&sortBy=publishedAt&pageSize=12&apiKey=${apiKey}`
-        );
+        const rssUrl = encodeURIComponent('https://www.autocar.co.uk/rss');
+        const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${rssUrl}`);
 
-        if (res.ok) {
-          const data = await res.json();
-          const transformed = formatArticles(data.articles || []);
+        if (!res.ok) {
+          throw new Error('Failed to reach news feed.');
+        }
+
+        const data = await res.json();
+
+        if (data.items && data.items.length > 0) {
+          const rssArticles = data.items.map((item) => ({
+            title: item.title,
+            description: item.description?.replace(/<[^>]*>?/gm, '') || item.content?.replace(/<[^>]*>?/gm, ''),
+            url: item.link,
+            urlToImage:
+              item.thumbnail ||
+              item.enclosure?.link ||
+              'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80',
+            publishedAt: item.pubDate,
+            source: { name: data.feed?.title || 'Autocar' },
+            author: item.author || 'Autocar Editorial',
+          }));
+
+          const transformed = formatArticles(rssArticles);
+
           if (transformed.length > 0) {
             setMediaArticles(transformed);
             return;
           }
         }
 
-        throw new Error('NewsAPI limited or unavailable on production domain');
+        throw new Error('No articles found in news feed.');
       } catch (err) {
-        console.warn('NewsAPI primary fetch failed, switching to live RSS fallback...', err);
-
-        // Fallback live RSS feed via rss2json (Production-safe)
-        try {
-          const rssUrl = encodeURIComponent('https://www.autocar.co.uk/rss');
-          const fallbackRes = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${rssUrl}`);
-          
-          if (!fallbackRes.ok) {
-            throw new Error('Failed to reach fallback news service.');
-          }
-
-          const fallbackData = await fallbackRes.json();
-
-          if (fallbackData.items && fallbackData.items.length > 0) {
-            const rssArticles = fallbackData.items.map((item) => ({
-              title: item.title,
-              description: item.description?.replace(/<[^>]*>?/gm, '') || item.content?.replace(/<[^>]*>?/gm, ''),
-              url: item.link,
-              urlToImage:
-                item.thumbnail ||
-                item.enclosure?.link ||
-                'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80',
-              publishedAt: item.pubDate,
-              source: { name: fallbackData.feed?.title || 'Autocar' },
-              author: item.author || 'Autocar Editorial',
-            }));
-
-            const transformedFallback = formatArticles(rssArticles);
-
-            if (transformedFallback.length > 0) {
-              setMediaArticles(transformedFallback);
-              return;
-            }
-          }
-
-          throw new Error('No articles found in fallback news feed.');
-        } catch (fallbackErr) {
-          console.error('Fallback fetch error:', fallbackErr);
-          setError('Unable to load live articles at this moment.');
-        }
+        console.error('News feed fetch error:', err);
+        setError('Unable to load live articles at this moment.');
       } finally {
         setLoading(false);
       }
@@ -123,7 +101,7 @@ export default function NewsAndVideos() {
 
   return (
     <div className="min-h-screen bg-white text-black py-12 px-6 md:px-12 font-sans">
-      <Seo title="News & Updates — Kaysetrans Journal" description="Latest automotive news, reviews, and updates curated for car buyers and enthusiasts in Zimbabwe." url="/news" />
+      <Seo title="News & Updates" description="Latest automotive news, reviews, and updates curated for car buyers and enthusiasts in Zimbabwe." url="/news" />
       <div className="max-w-7xl mx-auto space-y-16">
         
         {/* Header Section */}

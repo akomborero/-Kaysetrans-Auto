@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function NewsSection() {
   const [news, setNews] = useState([]);
@@ -6,49 +7,27 @@ export default function NewsSection() {
 
   useEffect(() => {
     async function fetchNews() {
-      const apiKey = '9df1884cd0a44fb7b29297035a4f643f';
-      const query = encodeURIComponent(
-        '(car OR cars OR automotive OR "electric vehicle" OR EV OR "motor vehicle") AND NOT (crime OR shooting OR court OR murder OR ice)'
-      );
-
+      // NewsAPI credentials must never ship in the client bundle.
+      // This feed is keyless; see NEWS_FEED_SETUP.md for the server-side option.
       try {
-        // Try Primary NewsAPI (Works on localhost)
-        const res = await fetch(
-          `https://newsapi.org/v2/everything?q=${query}&language=en&sortBy=publishedAt&pageSize=20&apiKey=${apiKey}`
-        );
+        const rssUrl = encodeURIComponent('https://www.autocar.co.uk/rss');
+        const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${rssUrl}`);
+        const data = await res.json();
 
-        if (res.ok) {
-          const data = await res.json();
-          if (data.articles && data.articles.length > 0) {
-            setNews(data.articles);
-            return;
-          }
+        if (data.items) {
+          const formattedArticles = data.items.map((item) => ({
+            title: item.title,
+            url: item.link,
+            urlToImage:
+              item.thumbnail ||
+              item.enclosure?.link ||
+              'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80',
+            source: { name: data.feed?.title || 'Autocar' },
+          }));
+          setNews(formattedArticles);
         }
-        throw new Error('NewsAPI restricted or limited');
       } catch (e) {
-        console.warn('Primary news fetch failed, switching to fallback feed...', e);
-        
-        // Fallback live feed for Vercel/Production
-        try {
-          const rssUrl = encodeURIComponent('https://www.autocar.co.uk/rss');
-          const fallbackRes = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${rssUrl}`);
-          const fallbackData = await fallbackRes.json();
-
-          if (fallbackData.items) {
-            const formattedArticles = fallbackData.items.map((item) => ({
-              title: item.title,
-              url: item.link,
-              urlToImage:
-                item.thumbnail ||
-                item.enclosure?.link ||
-                'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80',
-              source: { name: fallbackData.feed?.title || 'Autocar' },
-            }));
-            setNews(formattedArticles);
-          }
-        } catch (fallbackErr) {
-          console.error('Fallback news fetch failed:', fallbackErr);
-        }
+        console.error('News feed fetch failed:', e);
       } finally {
         setLoading(false);
       }
@@ -178,7 +157,7 @@ export default function NewsSection() {
             <div className="bg-gray-50 rounded-[40px] p-10 h-fit flex flex-col justify-between border border-gray-100">
               <div>
                 <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] mb-8">
-                  Trending Near You
+                  Trending Now
                 </h3>
                 <div className="divide-y divide-gray-200">
                   {trendingArticles.map((article, i) => (
@@ -200,14 +179,12 @@ export default function NewsSection() {
                 </div>
               </div>
 
-              <a
-                href="https://news.google.com/search?q=automotive"
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                to="/news"
                 className="w-full mt-10 py-5 border-[3px] border-black rounded-2xl font-black text-xs uppercase tracking-[0.2em] text-black hover:bg-black hover:text-white transition-all duration-300 active:scale-[0.98] text-center block"
               >
                 See all news
-              </a>
+              </Link>
             </div>
 
           </div>

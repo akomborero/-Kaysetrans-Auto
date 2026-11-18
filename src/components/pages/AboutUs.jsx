@@ -1,34 +1,35 @@
 import { Link } from 'react-router-dom';
 import { ShieldCheck, Award, Zap, Users, ArrowRight } from 'lucide-react';
+import Seo from '../Seo';
 
 export default function AboutUs() {
-  const stats = [
-    { value: '1,200+', label: 'Vehicles Delivered' },
-    { value: '99.4%', label: 'Satisfaction Rate' },
-    { value: '24/7', label: 'Dedicated Support' },
-    { value: '100%', label: 'Verified Integrity' },
+  const highlights = [
+    { value: 'Harare, Zimbabwe', label: 'BASED IN' },
+    { value: 'Pre-owned & new', label: 'VEHICLES' },
+    { value: 'Direct enquiries', label: 'HOW TO ENQUIRE' },
+    { value: 'Clearly listed', label: 'PRICING' },
   ];
 
   const pillars = [
     {
       icon: <ShieldCheck className="w-8 h-8 text-black" />,
-      title: 'Uncompromised Quality',
-      description: 'Every vehicle undergoes a rigorous 150-point mechanical inspection before reaching our showroom floor. No compromises, no hidden history.',
+      title: 'Hand-Picked Vehicles',
+      description: 'We select the pre-owned and new vehicles we list and share the details available for each one. Ask our team about any vehicle.',
     },
     {
       icon: <Zap className="w-8 h-8 text-black" />,
-      title: 'Seamless Purchasing',
-      description: 'From instant WhatsApp inquiries to rapid paper processing, we eliminate dealership friction so you get driving faster.',
+      title: 'Direct Enquiries',
+      description: 'Contact our team directly about a vehicle. We will confirm availability and explain the next steps.',
     },
     {
       icon: <Award className="w-8 h-8 text-black" />,
-      title: 'Transparent Pricing',
-      description: 'What you see is what you pay. We pride ourselves on straight-forward, fair market valuation with zero surprise add-ons.',
+      title: 'Clear Pricing',
+      description: 'Prices are shown on each listing. Contact our team if you have a question about a vehicle’s price.',
     },
     {
       icon: <Users className="w-8 h-8 text-black" />,
-      title: 'Customer First Culture',
-      description: 'We do not just sell cars; we forge long-term relationships backed by authentic after-sales support across Zimbabwe.',
+      title: 'Open Communication',
+      description: 'We focus on clear answers and direct contact, so you can ask questions before you decide.',
     },
   ];
 
@@ -50,7 +51,7 @@ export default function AboutUs() {
           </h1>
 
           <p className="text-base md:text-lg text-neutral-400 font-medium max-w-2xl leading-relaxed">
-            Founded on transparency, performance, and trust, Kaysetrans Auto is building the most trusted destination for acquiring hand-picked, premium pre-owned and new vehicles.
+            Kaysetrans Auto offers hand-picked pre-owned and new vehicles, with clearly listed prices and direct contact with our team.
           </p>
 
           <div className="pt-4 flex flex-wrap gap-4">
@@ -68,13 +69,13 @@ export default function AboutUs() {
       {/* Stats Ribbon */}
       <section className="bg-neutral-100 border-y border-neutral-200 py-12 px-6 md:px-12">
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
-          {stats.map((stat, idx) => (
+          {highlights.map((highlight, idx) => (
             <div key={idx} className="space-y-1 text-center md:text-left">
-              <span className="text-4xl md:text-5xl font-black italic tracking-tight text-black block">
-                {stat.value}
+              <span className="text-lg md:text-2xl font-black italic tracking-tight text-black block">
+                {highlight.value}
               </span>
               <span className="text-xs font-black uppercase tracking-wider text-neutral-500">
-                {stat.label}
+                {highlight.label}
               </span>
             </div>
           ))}
@@ -91,10 +92,10 @@ export default function AboutUs() {
               DRIVEN BY PASSION. BACKED BY INTEGRITY.
             </h2>
             <p className="text-sm text-neutral-600 font-medium leading-relaxed">
-              At Kaysetrans Auto, we believe buying a car should be as exciting as driving it. We recognized that vehicle buyers in Zimbabwe needed a dealership partner who prioritized authentic documentation, mechanical reliability, and hassle-free transactions.
+              At Kaysetrans Auto, we believe buying a car should be straightforward. Our aim is to make vehicle details and pricing clear, so you can ask the right questions before you decide.
             </p>
             <p className="text-sm text-neutral-600 font-medium leading-relaxed">
-              Whether you are looking for an economical daily commuter or a luxury executive SUV, our curated stock is selected to meet the exact standards of modern Zimbabwean roads.
+              Whether you are looking for an economical daily commuter or a larger executive vehicle, our team can help you explore the vehicles currently available.
             </p>
           </div>
 

@@ -1,55 +1,55 @@
 import { useState } from 'react';
 
-const FAQ_CATEGORIES = ['ALL', 'BUYING', 'SELLING', 'INSPECTION & FINANCING'];
+const FAQ_CATEGORIES = ['ALL', 'BUYING', 'SELLING', 'VEHICLE DETAILS'];
 
 const FAQ_DATA = [
   {
     id: 1,
     category: 'SELLING',
     question: "How do I know I'm getting a fair price for my car?",
-    answer: "We use real-time market data to compare thousands of similar listings. Our 'Deal Rating' system helps you see exactly how a car's price compares to the local market average, ensuring total pricing transparency."
+    answer: 'Send us the details of your vehicle and our team will discuss a price with you directly.'
   },
   {
     id: 2,
     category: 'BUYING',
-    question: 'Can I buy a car entirely online?',
-    answer: 'Yes! You can browse our inventory, apply for financing, and even arrange for home delivery. Our digital process is designed to be seamless, secure, and transparent from start to finish.'
+    question: 'Can I enquire about a car online?',
+    answer: 'Yes. Browse our inventory and contact us about any vehicle. Our team will confirm availability and explain the next steps.'
   },
   {
     id: 3,
-    category: 'INSPECTION & FINANCING',
-    question: 'What is the Kaysetrans Auto inspection process?',
-    answer: 'Every vehicle in our showroom undergoes a rigorous 150-point inspection by certified technicians to ensure safety, reliability, and mechanical integrity before it goes up for sale.'
+    category: 'VEHICLE DETAILS',
+    question: 'What details are available about a vehicle?',
+    answer: 'Each listing shows the information we hold, such as the year, mileage, transmission and fuel type. Contact us if you would like more detail or to arrange a viewing.'
   },
   {
     id: 4,
-    category: 'INSPECTION & FINANCING',
-    question: 'Do you offer financing for all credit types?',
-    answer: 'We work with a diverse network of trusted lenders to provide competitive financing options tailored for a wide range of credit scores and financial backgrounds.'
+    category: 'VEHICLE DETAILS',
+    question: 'How do I arrange payment?',
+    answer: 'Payment arrangements are discussed directly with our team for the vehicle you are interested in. Contact us to find out what applies to a specific listing.'
   },
   {
     id: 5,
     category: 'BUYING',
     question: 'What documents do I need to purchase a vehicle?',
-    answer: 'To complete your purchase, you will need a valid driver’s license, current proof of insurance, and your preferred method of payment or loan pre-approval details.'
+    answer: 'Requirements depend on the vehicle and the transaction. Contact our team and we will explain what is needed.'
   },
   {
     id: 6,
     category: 'SELLING',
-    question: 'How quickly will I receive payment after selling my car?',
-    answer: 'Once the final inspection is completed and the paperwork is signed, payments are processed directly into your bank account via electronic transfer within 24 to 48 hours.'
+    question: 'When will I be paid after selling my car?',
+    answer: 'Timing depends on the vehicle and the completion of the sale. Our team will discuss the next steps with you directly.'
   },
   {
     id: 7,
     category: 'BUYING',
-    question: 'Can I schedule a home test drive?',
-    answer: 'Yes! We offer flexible home test-drive appointments for eligible local buyers. Simply select your desired vehicle and schedule a convenient time with our team.'
+    question: 'Can I arrange a test drive?',
+    answer: 'Get in touch about the vehicle you are interested in and our team will arrange a viewing where possible.'
   },
   {
     id: 8,
-    category: 'INSPECTION & FINANCING',
-    question: 'Do your vehicles come with a warranty?',
-    answer: 'All certified pre-owned vehicles include a standard 90-day/3,000-mile limited powertrain warranty, with extended coverage plans available upon request.'
+    category: 'VEHICLE DETAILS',
+    question: 'Do vehicles come with a warranty?',
+    answer: 'Details vary by vehicle. Ask our team about a specific listing if you would like to know what applies.'
   }
 ];
 
@@ -144,22 +144,24 @@ export default function FAQSection() {
             </span>
             
             <h3 className="text-2xl font-black italic uppercase leading-tight">
-              WE'RE HERE TO HELP YOU 24/7
+              TALK TO OUR TEAM
             </h3>
 
             <p className="text-xs text-neutral-400 leading-relaxed font-medium">
-              Can't find the answer you're looking for? Reach out directly to our customer support team for instant assistance.
+              Can't find the answer you're looking for? Contact our team directly and we will help where we can.
             </p>
 
             <div className="space-y-3 pt-2 border-t border-neutral-800">
               <a 
-                href="tel:+18005550199" 
+                href="https://wa.me/263784532889" 
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-full py-3.5 px-6 rounded-full bg-white text-black text-xs font-black uppercase tracking-wider hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2"
               >
-                CALL SUPPORT
+                CHAT ON WHATSAPP
               </a>
               <a 
-                href="mailto:support@kaysetrans.com" 
+                href="mailto:tinotendakatsande@gmail.com" 
                 className="w-full py-3.5 px-6 rounded-full border border-neutral-700 text-white text-xs font-black uppercase tracking-wider hover:bg-neutral-900 transition-colors flex items-center justify-center gap-2"
               >
                 EMAIL US

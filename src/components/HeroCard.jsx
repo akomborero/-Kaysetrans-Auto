@@ -10,10 +10,6 @@ export default function HeroCard() {
 
   const navigate = useNavigate();
 
-  // Form states for fallback view
-  const [condition, setCondition] = useState('');
-  const [category, setCategory] = useState('');
-
   // Fetch cars from API
   useEffect(() => {
     const cached = getCachedCars();
@@ -217,55 +213,14 @@ export default function HeroCard() {
           </span>
 
           <h1 className="text-3xl font-black uppercase tracking-tight italic leading-none mb-4">
-            ELEVATE <br /> YOUR <br /> DRIVING
+            FIND YOUR <br /> NEXT <br /> VEHICLE
           </h1>
 
           <div className="w-8 h-0.5 bg-white mb-6" />
 
           <p className="text-xs text-gray-300 leading-relaxed mb-8">
-            Experience luxury redefined. Explore our curated collection of high-performance vehicles.
+            Browse the vehicles currently available, or contact our team for help finding the right car.
           </p>
-
-          <div className="space-y-4 mb-8">
-            <div className="border-b border-gray-700 pb-2">
-              <select
-                value={condition}
-                onChange={(e) => setCondition(e.target.value)}
-                className="w-full bg-transparent text-xs font-bold uppercase tracking-wider text-gray-300 focus:outline-none cursor-pointer"
-              >
-                <option value="" disabled className="bg-neutral-900 text-gray-400">
-                  CONDITION
-                </option>
-                <option value="new" className="bg-neutral-900 text-white">
-                  Brand New
-                </option>
-                <option value="used" className="bg-neutral-900 text-white">
-                  Pre-Owned
-                </option>
-              </select>
-            </div>
-
-            <div className="border-b border-gray-700 pb-2">
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full bg-transparent text-xs font-bold uppercase tracking-wider text-gray-300 focus:outline-none cursor-pointer"
-              >
-                <option value="" disabled className="bg-neutral-900 text-gray-400">
-                  CATEGORY
-                </option>
-                <option value="suv" className="bg-neutral-900 text-white">
-                  Luxury SUV
-                </option>
-                <option value="sports" className="bg-neutral-900 text-white">
-                  Sports Car
-                </option>
-                <option value="sedan" className="bg-neutral-900 text-white">
-                  Executive Sedan
-                </option>
-              </select>
-            </div>
-          </div>
         </div>
 
         <button 

@@ -16,37 +16,35 @@ export default function Toast({ message, type = 'error', onClose, duration = 400
   const isError = type === 'error';
   const isSuccess = type === 'success';
 
-  return (
-    <div className="fixed bottom-6 right-6 z-50 animate-bounce-in max-w-sm w-full p-2">
-      <div
-        className={`p-4 rounded-2xl border shadow-2xl flex items-start gap-3 transition-all bg-white ${
-          isError
-            ? 'border-red-200 text-red-900'
-            : isSuccess
-            ? 'border-emerald-200 text-emerald-900'
-            : 'border-neutral-200 text-neutral-900'
-        }`}
-      >
-        <div className="shrink-0 mt-0.5">
-          {isError && <AlertCircle className="w-5 h-5 text-red-500" />}
-          {isSuccess && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
-          {!isError && !isSuccess && <Info className="w-5 h-5 text-neutral-500" />}
-        </div>
+  const iconStyle = isError
+    ? 'bg-neutral-900 text-white'
+    : isSuccess
+    ? 'bg-neutral-100 text-neutral-900'
+    : 'bg-neutral-100 text-neutral-600';
 
-        <div className="grow space-y-0.5">
-          <h4 className="text-xs font-black uppercase tracking-wider">
+  return (
+    <div className="admin-toast fixed bottom-6 right-6 z-[60] w-full max-w-sm px-2">
+      <div className="flex items-start gap-3 rounded-xl border border-neutral-200 bg-white p-4 shadow-[0_18px_45px_-18px_rgba(0,0,0,0.35)]">
+        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${iconStyle}`}>
+          {isError && <AlertCircle className="h-4 w-4" />}
+          {isSuccess && <CheckCircle2 className="h-4 w-4" />}
+          {!isError && !isSuccess && <Info className="h-4 w-4" />}
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-semibold text-neutral-950">
             {isError ? 'Error' : isSuccess ? 'Success' : 'Notice'}
-          </h4>
-          <p className="text-xs font-medium text-neutral-600 leading-snug">
-            {message}
           </p>
+          <p className="mt-1 text-sm leading-snug text-neutral-600">{message}</p>
         </div>
 
         <button
+          type="button"
           onClick={onClose}
-          className="shrink-0 p-1 text-neutral-400 hover:text-black rounded-lg transition-colors cursor-pointer"
+          aria-label="Dismiss notification"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900/20"
         >
-          <X className="w-4 h-4" />
+          <X className="h-3.5 w-3.5" />
         </button>
       </div>
     </div>

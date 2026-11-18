@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { DollarSign, ShieldCheck, Zap, CheckCircle2, ArrowRight } from 'lucide-react';
+import Seo from '../Seo';
 
 export default function SellYourCar() {
   const [formData, setFormData] = useState({
@@ -39,7 +40,7 @@ export default function SellYourCar() {
 
   return (
     <div className="min-h-screen bg-white text-black py-12 px-6 md:px-12 font-sans">
-      <Seo title="Sell Your Car — Kaysetrans Valuation" description="Get an instant valuation and sell or consign your vehicle with Kaysetrans Auto. Fast offers and safe transactions in Harare." url="/sell" />
+      <Seo title="Sell Your Car" description="Enquire about selling or consigning your vehicle with Kaysetrans Auto in Harare." url="/sell" />
       <div className="max-w-7xl mx-auto space-y-16">
         
         {/* Header Banner */}
@@ -51,7 +52,7 @@ export default function SellYourCar() {
             SELL OR TRADE <span className="text-neutral-400">YOUR CAR</span>
           </h1>
           <p className="text-sm text-neutral-500 font-medium">
-            Get an instant valuation, competitive cash offer, or consignment listing in Harare within 24 hours.
+            Tell us about your vehicle and our team will get back to you about a valuation or consignment.
           </p>
         </div>
 
@@ -62,8 +63,8 @@ export default function SellYourCar() {
               <DollarSign className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-sm font-black italic uppercase">Best Market Offer</h3>
-              <p className="text-xs text-neutral-500 font-medium">Top cash payouts based on real-time market data in Zimbabwe.</p>
+              <h3 className="text-sm font-black italic uppercase">Clear Offer Discussion</h3>
+              <p className="text-xs text-neutral-500 font-medium">We will discuss a price with you based on the details you provide.</p>
             </div>
           </div>
 
@@ -72,8 +73,8 @@ export default function SellYourCar() {
               <Zap className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-sm font-black italic uppercase">Instant Payment</h3>
-              <p className="text-xs text-neutral-500 font-medium">Same-day bank transfer or settlement upon physical verification.</p>
+              <h3 className="text-sm font-black italic uppercase">Direct Process</h3>
+              <p className="text-xs text-neutral-500 font-medium">You speak to our team directly about your vehicle.</p>
             </div>
           </div>
 
@@ -82,8 +83,8 @@ export default function SellYourCar() {
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-sm font-black italic uppercase">Zero Hassle Paperwork</h3>
-              <p className="text-xs text-neutral-500 font-medium">We manage ownership transfer, police clearance, and agreements.</p>
+              <h3 className="text-sm font-black italic uppercase">Simple Enquiry</h3>
+              <p className="text-xs text-neutral-500 font-medium">Send your details and we will explain the next steps.</p>
             </div>
           </div>
         </div>
@@ -96,9 +97,9 @@ export default function SellYourCar() {
                 <CheckCircle2 className="w-10 h-10" />
               </div>
               <div className="space-y-2">
-                <h2 className="text-2xl font-black italic uppercase">Valuation Request Received!</h2>
+                <h2 className="text-2xl font-black italic uppercase">Ready to Send Your Enquiry?</h2>
                 <p className="text-xs text-neutral-500 max-w-md mx-auto">
-                  Your vehicle details have been saved. Click below to instantly send your info directly to our buying team on WhatsApp.
+                  Your enquiry has been prepared. Send it directly to our team on WhatsApp, or go back and edit the details first.
                 </p>
               </div>
 
@@ -255,7 +256,7 @@ export default function SellYourCar() {
                 type="submit"
                 className="w-full bg-black text-white font-black text-xs uppercase tracking-widest py-4 rounded-full hover:bg-neutral-800 transition-all cursor-pointer shadow-lg"
               >
-                GENERATE INSTANT QUOTE &rarr;
+                REVIEW &amp; SEND ENQUIRY &rarr;
               </button>
             </form>
           )}
