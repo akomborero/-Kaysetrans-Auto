@@ -1,7 +1,9 @@
 import { Helmet } from 'react-helmet-async';
 
 const SITE_NAME = 'Kaysetrans Auto';
-const SITE_URL = 'https://kaysetransauto.co.zw';
+// The live host is www.kaysetransauto.co.zw (apex 308-redirects to www).
+// Canonical urls must point at the final, directly-resolving host.
+const SITE_URL = 'https://www.kaysetransauto.co.zw';
 
 // Canonical and og:url values must be absolute. Existing pages pass relative paths.
 const toAbsoluteUrl = (url) => {

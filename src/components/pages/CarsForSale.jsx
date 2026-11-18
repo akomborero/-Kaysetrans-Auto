@@ -3,10 +3,38 @@ import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import Seo from '../Seo';
 import { getCachedCars, setCachedCars, clearCachedCars } from '../../utils/carsCache';
+import { getPrerenderData } from '../../utils/prerenderData';
+
+function normalizeCars(data) {
+  return data.map((car) => {
+    const primaryImg =
+      car.image ||
+      car.imageUrl ||
+      car.images?.[0] ||
+      car.car_images?.find((img) => img.is_primary)?.image_url ||
+      car.car_images?.[0]?.image_url ||
+      '';
+
+    return {
+      id: car.id || car._id,
+      make: car.make || car.title?.split(' ')[0] || 'UNKNOWN',
+      model: car.model || car.title?.split(' ').slice(1).join(' ') || 'MODEL',
+      price: Number(car.price) || 0,
+      year: car.year && car.year !== 0 && car.year !== '0' ? String(car.year) : 'N/A',
+      mileage: car.mileage || 'N/A',
+      transmission: car.transmission || 'Automatic',
+      fuel: car.fuel || 'Petrol',
+      image: primaryImg,
+    };
+  });
+}
 
 export default function CarsForSale() {
-  const [cars, setCars] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const prerenderCars = getPrerenderData()?.cars;
+  const hasPrerenderData = Array.isArray(prerenderCars);
+
+  const [cars, setCars] = useState(() => (hasPrerenderData ? normalizeCars(prerenderCars) : []));
+  const [loading, setLoading] = useState(!hasPrerenderData);
   const [apiError, setApiError] = useState('');
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -14,11 +42,16 @@ export default function CarsForSale() {
   const [maxPrice, setMaxPrice] = useState('50000');
 
   useEffect(() => {
-    const cached = getCachedCars();
-    if (cached) {
-      setCars(cached);
-      setLoading(false);
-      return; // use cache, skip fetch
+    // Prerendered pages already contain genuine inventory in their HTML and
+    // in window.__PRERENDER_DATA__; skip the stale cache but still refresh
+    // from the live API so the client behaves as before.
+    if (!hasPrerenderData) {
+      const cached = getCachedCars();
+      if (cached) {
+        setCars(cached);
+        setLoading(false);
+        return; // use cache, skip fetch
+      }
     }
 
     fetch('https://smart-ar-backend.onrender.com/api/cars')
@@ -30,27 +63,7 @@ export default function CarsForSale() {
         setApiError('');
 
         if (Array.isArray(data) && data.length > 0) {
-          const formattedCars = data.map((car) => {
-            const primaryImg =
-              car.image ||
-              car.imageUrl ||
-              car.images?.[0] ||
-              car.car_images?.find((img) => img.is_primary)?.image_url ||
-              car.car_images?.[0]?.image_url ||
-              '';
-
-            return {
-              id: car.id || car._id,
-              make: car.make || car.title?.split(' ')[0] || 'UNKNOWN',
-              model: car.model || car.title?.split(' ').slice(1).join(' ') || 'MODEL',
-              price: Number(car.price) || 0,
-              year: car.year && car.year !== 0 && car.year !== '0' ? String(car.year) : 'N/A',
-              mileage: car.mileage || 'N/A',
-              transmission: car.transmission || 'Automatic',
-              fuel: car.fuel || 'Petrol',
-              image: primaryImg,
-            };
-          });
+          const formattedCars = normalizeCars(data);
           setCars(formattedCars);
           setCachedCars(formattedCars);
         } else {
@@ -63,7 +76,7 @@ export default function CarsForSale() {
         setCars([]);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [hasPrerenderData]);
 
   const availableMakes = ['All', ...new Set(cars.map((car) => car.make))].filter(Boolean);
   const whatsappHref = `https://wa.me/263784532889?text=${encodeURIComponent('Hello, I would like to enquire about the vehicles currently available.')}`;

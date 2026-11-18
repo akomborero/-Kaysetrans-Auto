@@ -2,25 +2,37 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { getCachedCars, setCachedCars } from '../utils/carsCache';
+import { getPrerenderData } from '../utils/prerenderData';
+
+function formatCars(data) {
+  return data.map((car) => ({
+    id: car.id,
+    title: `${car.make || ''} ${car.model || ''}`.trim() || 'UNTITLED CAR',
+    price: car.price ? `$${Number(car.price).toLocaleString()}` : '$0',
+    year: car.year && car.year !== 0 && car.year !== '0' ? car.year : 'N/A',
+    image:
+      car.image || car.imageUrl || car.images?.[0] ||
+      car.car_images?.find((img) => img.is_primary)?.image_url ||
+      car.car_images?.[0]?.image_url || '',
+  }));
+}
 
 export default function FeaturedStock() {
-  const [cars, setCars] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const prerenderCars = getPrerenderData()?.cars;
+  const hasPrerenderData = Array.isArray(prerenderCars);
+
+  const [cars, setCars] = useState(() => (hasPrerenderData ? formatCars(prerenderCars) : []));
+  const [loading, setLoading] = useState(!hasPrerenderData);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const cached = getCachedCars();
-    if (cached) {
-      const mapped = cached.map((car) => ({
-        id: car.id,
-        title: `${car.make || ''} ${car.model || ''}`.trim() || 'UNTITLED CAR',
-        price: car.price ? `$${Number(car.price).toLocaleString()}` : '$0',
-        year: car.year && car.year !== 0 && car.year !== '0' ? car.year : 'N/A',
-        image: car.image || '',
-      }));
-      setCars(mapped);
-      setLoading(false);
-      return;
+    if (!hasPrerenderData) {
+      const cached = getCachedCars();
+      if (cached) {
+        setCars(formatCars(cached));
+        setLoading(false);
+        return;
+      }
     }
 
     fetch('https://smart-ar-backend.onrender.com/api/cars')
@@ -46,17 +58,9 @@ export default function FeaturedStock() {
               car.image || car.imageUrl || car.images?.[0] || car.car_images?.find((img) => img.is_primary)?.image_url || car.car_images?.[0]?.image_url || '',
           }));
 
-          try { setCachedCars(normalized); } catch(e){}
+          try { setCachedCars(normalized); } catch { /* cache unavailable */ }
 
-          const formattedCars = normalized.map((car) => ({
-            id: car.id,
-            title: `${car.make || ''} ${car.model || ''}`.trim() || 'UNTITLED CAR',
-            price: car.price ? `$${Number(car.price).toLocaleString()}` : '$0',
-            year: car.year && car.year !== 0 && car.year !== '0' ? car.year : 'N/A',
-            image: car.image || '',
-          }));
-
-          setCars(formattedCars);
+          setCars(formatCars(normalized));
         } else {
           setCars([]);
         }
@@ -67,7 +71,7 @@ export default function FeaturedStock() {
         setCars([]);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [hasPrerenderData]);
 
   const whatsappHref = `https://wa.me/263784532889?text=${encodeURIComponent('Hello, I would like to enquire about the vehicles currently available.')}`;
 

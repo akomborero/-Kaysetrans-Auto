@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { getCachedCars } from '../../utils/carsCache';
+import { getPrerenderData } from '../../utils/prerenderData';
 import Seo from '../Seo';
 
 export default function CarDetails() {
   const { id } = useParams();
 
-  const [car, setCar] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const prerenderCar = getPrerenderData()?.car || null;
+  const [car, setCar] = useState(prerenderCar);
+  const [loading, setLoading] = useState(!prerenderCar);
   const [error, setError] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -36,9 +38,9 @@ export default function CarDetails() {
 
       } catch (err) {
         console.error('Error fetching car details:', err);
-        // A cache hit can safely keep rendering the cached car if the live
-        // request fails; without a cached car, surface the error.
-        if (isActive && !hasCached) {
+        // A cache hit or prerendered vehicle can safely keep rendering if the
+        // live request fails; otherwise surface the error.
+        if (isActive && !hasCached && !prerenderCar) {
           setError(err.message || 'Failed to load car details.');
         }
       } finally {
@@ -55,29 +57,31 @@ export default function CarDetails() {
       // setState inside the effect body.
       Promise.resolve().then(() => {
         let hasCached = false;
-        try {
-          const cached = getCachedCars();
-          if (cached) {
-            const found = cached.find((c) => String(c.id) === String(id));
-            if (found) {
-              hasCached = true;
-              setCar(found);
-              setLoading(false);
+        if (!prerenderCar) {
+          try {
+            const cached = getCachedCars();
+            if (cached) {
+              const found = cached.find((c) => String(c.id) === String(id));
+              if (found) {
+                hasCached = true;
+                setCar(found);
+                setLoading(false);
+              }
             }
+          } catch {
+            // An unreadable cache is harmless; the live fetch below still runs.
           }
-        } catch {
-          // An unreadable cache is harmless; the live fetch below still runs.
         }
 
-        if (!hasCached) setLoading(true);
-        return hasCached;
-      }).then((hasCached) => {
-        if (isActive) fetchCarDetails(hasCached);
+        if (!hasCached && !prerenderCar) setLoading(true);
+        return hasCached || !!prerenderCar;
+      }).then((hasContent) => {
+        if (isActive) fetchCarDetails(hasContent);
       });
     }
 
     return () => { isActive = false; };
-  }, [id]);
+  }, [id, prerenderCar]);
 
   // Updated Helper: Safely parses car_images, handles Base64 formatting, and appends prefixes
   const extractImageUrls = (data) => {

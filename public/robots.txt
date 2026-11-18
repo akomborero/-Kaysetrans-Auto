@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 
-Sitemap: https://kaysetransauto.co.zw/sitemap.xml
+Sitemap: https://www.kaysetransauto.co.zw/sitemap.xml

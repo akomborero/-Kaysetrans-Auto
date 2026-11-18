@@ -2,49 +2,58 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getCachedCars, setCachedCars } from '../utils/carsCache';
+import { getPrerenderData } from '../utils/prerenderData';
+
+function normalizeCars(data) {
+  return data.map((car) => ({
+    id: car.id || car._id,
+    make: car.make || car.title?.split(' ')[0] || 'UNKNOWN',
+    model: car.model || car.title?.split(' ').slice(1).join(' ') || 'MODEL',
+    price: Number(car.price) || 0,
+    year: car.year && car.year !== 0 && car.year !== '0' ? String(car.year) : 'N/A',
+    mileage: car.mileage || 'N/A',
+    transmission: car.transmission || 'Automatic',
+    fuel: car.fuel || 'Petrol',
+    image:
+      car.image || car.imageUrl || car.images?.[0] || car.car_images?.find((img) => img.is_primary)?.image_url || car.car_images?.[0]?.image_url || '',
+    description: car.description || '',
+  }));
+}
 
 export default function HeroCard() {
-  const [cars, setCars] = useState([]);
+  const prerenderCars = getPrerenderData()?.cars;
+  const hasPrerenderData = Array.isArray(prerenderCars);
+
+  const [cars, setCars] = useState(() => (hasPrerenderData ? normalizeCars(prerenderCars) : []));
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!hasPrerenderData);
 
   const navigate = useNavigate();
 
-  // Fetch cars from API
+  // Fetch cars from API (prerendered pages already contain genuine inventory)
   useEffect(() => {
-    const cached = getCachedCars();
-    if (cached) {
-      setCars(cached);
-      setLoading(false);
-      return;
+    if (!hasPrerenderData) {
+      const cached = getCachedCars();
+      if (cached) {
+        setCars(cached);
+        setLoading(false);
+        return;
+      }
     }
 
     fetch('https://smart-ar-backend.onrender.com/api/cars')
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
-          // normalize similar to other pages
-          const normalized = data.map((car) => ({
-            id: car.id || car._id,
-            make: car.make || car.title?.split(' ')[0] || 'UNKNOWN',
-            model: car.model || car.title?.split(' ').slice(1).join(' ') || 'MODEL',
-            price: Number(car.price) || 0,
-            year: car.year && car.year !== 0 && car.year !== '0' ? String(car.year) : 'N/A',
-            mileage: car.mileage || 'N/A',
-            transmission: car.transmission || 'Automatic',
-            fuel: car.fuel || 'Petrol',
-            image:
-              car.image || car.imageUrl || car.images?.[0] || car.car_images?.find((img) => img.is_primary)?.image_url || car.car_images?.[0]?.image_url || '',
-            description: car.description || '',
-          }));
+          const normalized = normalizeCars(data);
 
           setCars(normalized);
-          try { setCachedCars(normalized); } catch(e){}
+          try { setCachedCars(normalized); } catch { /* cache unavailable */ }
         }
       })
       .catch((err) => console.error('Error fetching cars:', err))
       .finally(() => setLoading(false));
-  }, []);
+  }, [hasPrerenderData]);
 
   // Auto-slide effect every 4 seconds
   useEffect(() => {
