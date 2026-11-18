@@ -5,6 +5,8 @@ import {
   Menu, ChevronRight, LogOut, ArrowUpRight, Image as ImageIcon, ShieldCheck,
 } from 'lucide-react';
 import { clearCachedCars } from '../../utils/carsCache';
+import ConfirmDialog from '../ConfirmDialog.jsx';
+import { useToast } from '../../context/useToast.js';
 
 const inputClass = 'w-full rounded-xl border border-neutral-200 bg-white px-3.5 py-2.5 text-sm text-neutral-900 placeholder-neutral-400 outline-none transition-colors focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10';
 
@@ -54,6 +56,8 @@ export default function ManageInventory({ onLogout }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedImages, setSelectedImages] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
+  const { showToast } = useToast();
 
   const [form, setForm] = useState({
     make: '',
@@ -79,6 +83,7 @@ export default function ManageInventory({ onLogout }) {
       }
     } catch (error) {
       console.error('Error fetching cars:', error);
+      showToast('Could not load your inventory. Please try again.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -115,7 +120,10 @@ export default function ManageInventory({ onLogout }) {
   // Create Car Handler
   const handleCreateListing = async (e) => {
     e.preventDefault();
-    if (!form.make || !form.model || !form.price) return;
+    if (!form.make || !form.model || !form.price) {
+      showToast('Please provide a make, model and price before publishing.', 'error');
+      return;
+    }
 
     setIsSubmitting(true);
     const token = localStorage.getItem('adminToken');
@@ -151,9 +159,17 @@ export default function ManageInventory({ onLogout }) {
         throw new Error(errData.message || 'Failed to create car');
       }
 
-      const createdCar = await response.json();
+      const result = await response.json();
+      const createdCar = result.car || result;
       setFleet([createdCar, ...fleet]);
       try { clearCachedCars(); } catch(e){}
+
+      // Surface partial image failures as a card instead of hiding them.
+      if (result.imageError) {
+        showToast(`Vehicle created, but some photos failed to save: ${result.imageError}`, 'error');
+      } else {
+        showToast(`${createdCar.make || 'Vehicle'} ${createdCar.model || ''} published successfully.`, 'success');
+      }
 
       // Reset Form & Gallery
       setForm({
@@ -167,15 +183,18 @@ export default function ManageInventory({ onLogout }) {
       });
       setSelectedImages([]);
     } catch (error) {
-      alert(error.message);
+      showToast(error.message || 'Failed to publish vehicle.', 'error');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDeleteCar = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this car?')) return;
+  // Open an in-app confirmation card instead of a browser confirm() dialog.
+  const handleDeleteCar = (id) => setPendingDeleteId(id);
 
+  const confirmDeleteCar = async () => {
+    const id = pendingDeleteId;
+    setPendingDeleteId(null);
     const token = localStorage.getItem('adminToken');
 
     try {
@@ -189,12 +208,13 @@ export default function ManageInventory({ onLogout }) {
       if (response.ok) {
         setFleet(fleet.filter((car) => (car.id || car._id) !== id));
         try { clearCachedCars(); } catch(e){}
+        showToast('Vehicle deleted successfully.', 'success');
       } else {
         const err = await response.json();
-        alert(err.message || 'Failed to delete car');
+        showToast(err.message || 'Failed to delete vehicle.', 'error');
       }
     } catch (error) {
-      alert('Error deleting car: ' + error.message);
+      showToast('Error deleting vehicle: ' + error.message, 'error');
     }
   };
 
@@ -595,6 +615,16 @@ export default function ManageInventory({ onLogout }) {
           </div>
         </main>
       </div>
+
+      <ConfirmDialog
+        isOpen={pendingDeleteId !== null}
+        title="Delete this vehicle?"
+        message="This permanently removes the vehicle and its stored photos. This action cannot be undone."
+        confirmLabel="Delete vehicle"
+        cancelLabel="Keep vehicle"
+        onCancel={() => setPendingDeleteId(null)}
+        onConfirm={confirmDeleteCar}
+      />
     </div>
   );
 }
